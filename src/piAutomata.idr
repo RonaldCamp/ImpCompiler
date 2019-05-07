@@ -63,3 +63,6 @@ process ( (CtExpOp CtrlLT)::xs , (ValInt val1) :: (ValInt val2 :: restoLista) ) 
 process ( (CtExpOp CtrlGT)::xs , (ValInt val1) :: (ValInt val2 :: restoLista) ) = process (xs, (ValBool (calcBExp (GT (N val2) (N val1)))) ::restoLista)
 process ( (CtExpOp CtrlAnd)::xs , (ValBool val1) :: (ValBool val2 :: restoLista) ) = process (xs, (ValBool (calcBExp (And (Boo val2) (Boo val1)))) ::restoLista)
 process ( (CtExpOp CtrlOR)::xs , (ValBool val1) :: (ValBool val2 :: restoLista) ) = process (xs, (ValBool (calcBExp (OR (Boo val2) (Boo val1)))) ::restoLista)
+
+--Commands
+process ( (CtCmd (Assign c1 c2)) ::xs , listVal ) = process (c2::(CtCmdOp CtrlAssign::xs), c1::listVal)
