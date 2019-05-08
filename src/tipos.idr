@@ -18,4 +18,4 @@ data ExpOp = CtrlSum | CtrlSub | CtrlDiv | CtrlMul | CtrlNot | CtrlLT | CtrlGT |
 
 data Ctrl = CtExp Exp | CtExpOp ExpOp | CtCmd Cmd | CtCmdOp CmdOp
 
-data Val = ValInt Int | ValBool Bool | ValStr String
+data Val = ValInt Int | ValBool Bool | ValId Id
