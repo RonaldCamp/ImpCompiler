@@ -6,4 +6,4 @@ all:
 	@echo ">>install zlib"
 	sudo apt-get install zlibc zlib1g-dev
 	@echo ">>install idris"
-	$HOME/.cabal/bin/cabal install idris
+	cabal install idris
