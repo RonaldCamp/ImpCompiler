@@ -84,7 +84,7 @@ A primeira transição:
 δ(Sum(E₁, E₂) :: C, V, S) = δ(E₁ :: E₂ :: #SUM :: C, V, S) corresponde à:
 process ( (CtExp (AExpR (Sum n1 n2))) ::xs , listVal, env, stored ) = process ((CtExp (AExpR n1) :: (CtExp (AExpR n2) :: (CtExpOp CtrlSum :: xs)) ), listVal, env, stored)
 ```
-Aqui o π Automata recebe a expressão aritmética de soma no topo da pilha e xs é o restante dos elementos na pilha, a pilha de valores está vazia. Na primeira transição ao encontrar o Opcode Aexp sabe-se que é necessário empilhar os operandos n1 e n2 e o opcode correspondente a soma (Ctrl Sum) na pilha de controle.
+Aqui o π Automata recebe a expressão aritmética de soma no topo da pilha e xs é o restante dos elementos na pilha, a pilha de valores está vazia. Na primeira transição ao encontrar o opcode Aexp sabe-se que é necessário empilhar os operandos n1 e n2 e o opcode correspondente a soma (Ctrl Sum) na pilha de controle.
 
 Na próxima transição os operandos estarão no topo da pilha de controle e dessa forma irão casar com:
 ```
@@ -99,7 +99,7 @@ Então, a próxima transição será:
 process ( (CtExpOp CtrlSum)::xs , (ValInt val1) :: (ValInt val2 :: restoLista), env, stored ) = process (xs, (ValInt (calcAExp (Sum (N val2) (N val1)))) ::restoLista, env, stored)
 ```
 
-Ao encontrar o Opcode CtrlSum no topo da pilha de controle a próxima transição realizada é a de chamar a função calc para a operação indicada com os dois valores mais acima da pilha de valores.
+Ao encontrar o opcode CtrlSum no topo da pilha de controle a próxima transição realizada é a de chamar a função calc para a operação indicada com os dois valores mais acima da pilha de valores.
 
 Seguindo o mesmo raciocinio estão definidas a seguir as outras operações aritméticas:
 ```
@@ -196,33 +196,73 @@ process ( (CtExpOp CtrlNot) :: xs , (ValBool b) :: restoLista, env, stored ) = p
 
 ### Comandos
 
-Depois de introduzirmos os tipos Cmd, CmdOp e Id, nós definimos o tipo Loc para lidar com a memória, da seguinte forma:
+Depois de introduzirmos os tipos Cmd, CmdOp e Id, nós definimos o tipo Loc para lidar com a memória. 
+
+Ao encontrar um Id no topo da pilha de controle ele utiliza o Id para encontrar um Loc (location) dentro do ambiente, e com esse Loc ele vai na memória
+pegar o valor associado ao Loc, empilhando o mesmo na pilha de valores. Sendo 'c1' a string do Id, o lookup uma função do SortedMap (mapa chave valor) que 
+utiliza a chave como primeiro parametro e o mapa como segundo parametro para retornar o valor correspondente. O lookup' aqui tem a mesma função do lookup,
+exceto que este trata a questão do retorno do lookup ser um Monad.
 
 ```
 δ(Id(W) :: C, V, E, S) = δ(C, B :: V, E, S), where E[W] = l ∧ S[l] = B corresponde à:
-process ( (CtCmd (Assign (ValID c1) c2)) ::xs , listVal, env, stored) = process (CtExp c2 ::(CtCmdOp CtrlAssign::xs), ValId c1::listVal, env, stored)
+process ( (CtExp (AExpR (ID (ValID c1)) )) ::xs , listVal, env, stored) = process (xs, (lookup' (lookup (ValId c1) (env)) (stored) )::listVal, env, stored)
 
+```
+Ao se deparar com um Assign no topo da pilha de controle, empilha-se o Id correspondente ao assign na pilha de valores e o opcode correspondente ao assign
+seguido de um Exp. Sendo 'c2' nosso Exp e CtrlAssign nosso opcode.
+
+```
 δ(Assign(W, X) :: C, V, E, S) = δ(X :: #ASSIGN :: C, W :: V, E, S') corresponde à:
-process ( (CtExp (AExpR (ID (ValID c1)) )) ::xs , listVal, env, stored) = process (xs, (lookup'' (lookup' (ValId c1) (env)) (stored) )::listVal, env, stored)
+process ( (CtCmd (Assign (ValID c1) c2)) ::xs , listVal, env, stored) = process (CtExp c2 ::(CtCmdOp CtrlAssign::xs), ValId c1::listVal, env, stored)
+```
+Ao encontrar Loop no topo da pilha empilha-se o opcode correspondente ao loop e a expressão booleana ambos na pilha de controle, e empilha-se o Loop na
+pilha de valores. Sendo 'b' a expressão booleana, CtrlLoop o opcode.
 
+```
 δ(Loop(X, M) :: C, V, E, S) = δ(X :: #LOOP :: C, Loop(X, M) :: V, E, S) corresponde à:
 process ( (CtCmd (Loop b c)) ::xs , listVal, env, stored) = process (CtExp (BExpR b) ::(CtCmdOp CtrlLoop::xs), ValCmd (Loop b c)::listVal, env, stored)
+```
+Ao encontrar Cond (condicional) no topo da pilha de controle, empilha-se o Cond na pilha de valores, e empilha-se o opcode correspondente ao cond e a expressão
+booleana na pilha de controle. Sendo 'b' nossa expressão booleana, CtrlCond o opcode.
 
+```
 δ(Cond(X, M₁, M₂) :: C, V, E, S) = δ(X :: #COND :: C, Cond(X, M₁, M₂) :: V, E, S) corresponde à:
 process ( (CtCmd (Cond b c1 c2)) ::xs , listVal, env, stored) = process (CtExp (BExpR b) ::(CtCmdOp CtrlCond::xs), ValCmd (Cond b c1 c2)::listVal, env, stored)
+```
+Ao se deparar com CSeq no topo da pilha de controle, empilha-se os dois comandos na lista de controle. Sendo c1 o primeiro comando e c2 o segundo comando.
+Contudo c1 é empilhado somente após c2 ser empilhado, para que c1 seja o primeiro comando a ser encontrado no topo.
 
+```
 δ(CSeq(M₁, M₂) :: C, V, E, S) = δ(M₁ :: M₂ :: C, V, E, S) corresponde à:
 process ( (CtCmd (CSeq c1 c2)) ::xs , listVal, env, stored) = process (CtCmd c1::(CtCmd c2::xs), listVal, env, stored)
+```
+Ao encontrar o opcode de Assign (CtrlAssign) no topo da pilha de controle e dois valores na pilha de valores, inserimos na memória 'v1', utilizando o
+Loc (location) encontrado fazendo-se o lookup de 'v2' no mapa do ambiente, ou seja, utilizamos o Loc encontrado pelo lookup no mapa do ambiente utilizando a chave
+'v2'. Sendo 'v2'(Id) a chave para o mapa ambiente, e 'v1' o valor desse 'v2' na memória, mapeado por um location como chave.
 
+```
 δ(#ASSIGN :: C, T :: W :: V, E, S) = δ(C, V, E, S'), where E[W] = l ∧ S' = S/[l ↦ T] corresponde à:
-process ( (CtCmdOp CtrlAssign :: xs ,  v1 :: (v2 ::listVal), env, stored)) = process (xs, listVal, env, inserir (lookup' v2 env) (v1) stored)
+process ( (CtCmdOp CtrlAssign :: xs ,  v1 :: (v2 ::listVal), env, stored)) = process (xs, listVal, env, inserir (lookup v2 env) (v1) stored)
+```
+Ao encontrar o opcode do Loop (CtrlLoop) no topo da pilha de controle, um valor booleano e outro Loop ambos na pilha de valores, então temos dois casos:
+Caso o valor booleano seja true, empilha-se o comando dentro do Loop na pilha de controle e empilha-se novamente o loop na pilha de valores.
+Caso o valor booleano seja false, retornamos a pilha de controle sem o opcode e a pilha de valores sem os valores mencionados acima. Sendo 'c' o comando
+dentro do Loop.
 
+
+```
 δ(#LOOP :: C, Boo(true) :: Loop(X, M) :: V, E, S) = δ(M :: Loop(X, M) :: C, V, E, S) corresponde à:
 process ( (CtCmdOp CtrlLoop :: xs , ValBool True :: (ValCmd (Loop b2 c) :: listVal), env, stored)) = process (CtCmd c ::(CtCmd (Loop b2 c)::xs), listVal, env, stored)
 
 δ(#LOOP :: C, Boo(false) :: Loop(X, M) :: V, E, S) = δ(C, V, E, S) corresponde à:
 process ( (CtCmdOp CtrlLoop :: xs , ValBool False :: (ValCmd (Loop b2 c) :: listVal), env, stored)) = process (xs, listVal, env, stored)
+```
+Ao encotrar o opcode do Cond (CtrlCond) no topo da pilha de controle, um valor booleano e outro Cond Na pilha de valores, então temos dois casos:
+Caso o valor booleano seja true, empilha-se o primeiro comando (corresponde ao then do if then else) na pilha de controle.
+Caso o valor booleano seja false, empilha-se o segundo comando (corresponde ao else do if then else) na pilha de controle.
+Sendo 'c1' o primeiro comando e 'c2' o segundo comando.
 
+```
 δ(#COND :: C, Boo(true) :: Cond(X, M₁, M₂) :: V, E, S) = δ(M₁ :: C, V, E, S) corresponde à:
 process ( (CtCmdOp CtrlCond :: xs , ValBool True :: (ValCmd (Cond b2 c1 c2) :: listVal), env, stored)) = process (CtCmd c1 ::xs, listVal, env, stored)
 

@@ -49,13 +49,11 @@ calcBExp (OR (Boo b1) (Boo b2)) = (||) b1 b2
 -- process ([(CtCmd (CSeq (Assign (ID "y") (AExpR (N 3))) (Loop (GT (ID "y") (N 2)) ((Assign (ID "y") (AExpR (Sub (ID "y") (N 1) )) ))) ))], [], fromList [ (ValId "x", L 1) , (ValId "y", L 2) , (ValId "z", L 3)], empty)
 -- process ([CtCmd (CSeq (Assign (ID "x") (AExpR (N 2)) ) (Assign (ID "x") ( AExpR (Sub (ID "x") (N 1)) ) ) )], [], fromList [ (ValId "x", L 1) , (ValId "y", L 2) , (ValId "z", L 3)], empty)
 
-lookup': Val -> SortedMap Val Loc -> Maybe Loc
-lookup' v map =  lookup v map
-
-lookup'': Maybe Loc -> SortedMap Loc Val -> Val
-lookup'' (Just loc) sto =  transforma (lookup loc sto) where
+lookup': Maybe Loc -> SortedMap Loc Val -> Val
+lookup' (Just loc) sto =  transforma (lookup loc sto) where
   transforma:Maybe Val -> Val
   transforma (Just val) = val
+-- lookup' Nothing sto = 
 
 inserir : Maybe Loc -> Val -> SortedMap Loc Val -> SortedMap Loc Val
 inserir (Just loc) v stored = insert loc v stored
@@ -100,12 +98,12 @@ process ( (CtExpOp CtrlOR)::xs , (ValBool val1) :: (ValBool val2 :: restoLista),
 
 --Commands
 process ( (CtCmd (Assign (ValID c1) c2)) ::xs , listVal, env, stored) = process (CtExp c2 ::(CtCmdOp CtrlAssign::xs), ValId c1::listVal, env, stored)
-process ( (CtExp (AExpR (ID (ValID c1)) )) ::xs , listVal, env, stored) = process (xs, (lookup'' (lookup' (ValId c1) (env)) (stored) )::listVal, env, stored)
+process ( (CtExp (AExpR (ID (ValID c1)) )) ::xs , listVal, env, stored) = process (xs, (lookup' (lookup (ValId c1) (env)) (stored) )::listVal, env, stored)
 process ( (CtCmd (Loop b c)) ::xs , listVal, env, stored) = process (CtExp (BExpR b) ::(CtCmdOp CtrlLoop::xs), ValCmd (Loop b c)::listVal, env, stored)
 process ( (CtCmd (Cond b c1 c2)) ::xs , listVal, env, stored) = process (CtExp (BExpR b) ::(CtCmdOp CtrlCond::xs), ValCmd (Cond b c1 c2)::listVal, env, stored)
 process ( (CtCmd (CSeq c1 c2)) ::xs , listVal, env, stored) = process (CtCmd c1::(CtCmd c2::xs), listVal, env, stored)
 
-process ( (CtCmdOp CtrlAssign :: xs ,  v1 :: (v2 ::listVal), env, stored)) = process (xs, listVal, env, inserir (lookup' v2 env) (v1) stored)
+process ( (CtCmdOp CtrlAssign :: xs ,  v1 :: (v2 ::listVal), env, stored)) = process (xs, listVal, env, inserir (lookup v2 env) (v1) stored)
 process ( (CtCmdOp CtrlLoop :: xs , ValBool True :: (ValCmd (Loop b2 c) :: listVal), env, stored)) = process (CtCmd c ::(CtCmd (Loop b2 c)::xs), listVal, env, stored)
 process ( (CtCmdOp CtrlLoop :: xs , ValBool False :: (ValCmd (Loop b2 c) :: listVal), env, stored)) = process (xs, listVal, env, stored)
 process ( (CtCmdOp CtrlCond :: xs , ValBool True :: (ValCmd (Cond b2 c1 c2) :: listVal), env, stored)) = process (CtCmd c1 ::xs, listVal, env, stored)
