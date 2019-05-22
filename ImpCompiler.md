@@ -245,9 +245,12 @@ Loc (location) encontrado fazendo-se o lookup de 'v2' no mapa do ambiente, ou se
 process ( (CtCmdOp CtrlAssign :: xs ,  v1 :: (v2 ::listVal), env, stored)) = process (xs, listVal, env, inserir (lookup v2 env) (v1) stored)
 ```
 Ao encontrar o opcode do Loop (CtrlLoop) no topo da pilha de controle, um valor booleano e outro Loop ambos na pilha de valores, então temos dois casos:
-Caso o valor booleano seja true, empilha-se o comando dentro do Loop na pilha de controle e empilha-se novamente o loop na pilha de valores.
-Caso o valor booleano seja false, retornamos a pilha de controle sem o opcode e a pilha de valores sem os valores mencionados acima. Sendo 'c' o comando
-dentro do Loop.
+
+- Caso o valor booleano seja true, empilha-se o comando dentro do Loop na pilha de controle e empilha-se novamente o loop na pilha de valores.
+
+- Caso o valor booleano seja false, retornamos a pilha de controle sem o opcode e a pilha de valores sem os valores mencionados acima. 
+
+Sendo 'c' o comando dentro do Loop.
 
 
 ```
@@ -258,8 +261,11 @@ process ( (CtCmdOp CtrlLoop :: xs , ValBool True :: (ValCmd (Loop b2 c) :: listV
 process ( (CtCmdOp CtrlLoop :: xs , ValBool False :: (ValCmd (Loop b2 c) :: listVal), env, stored)) = process (xs, listVal, env, stored)
 ```
 Ao encotrar o opcode do Cond (CtrlCond) no topo da pilha de controle, um valor booleano e outro Cond Na pilha de valores, então temos dois casos:
-Caso o valor booleano seja true, empilha-se o primeiro comando (corresponde ao then do if then else) na pilha de controle.
-Caso o valor booleano seja false, empilha-se o segundo comando (corresponde ao else do if then else) na pilha de controle.
+
+- Caso o valor booleano seja true, empilha-se o primeiro comando (corresponde ao then do if then else) na pilha de controle.
+
+- Caso o valor booleano seja false, empilha-se o segundo comando (corresponde ao else do if then else) na pilha de controle.
+
 Sendo 'c1' o primeiro comando e 'c2' o segundo comando.
 
 ```
