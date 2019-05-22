@@ -38,7 +38,7 @@ calcBExp (OR (Boo b1) (Boo b2)) = (||) b1 b2
 -- process ([CtCmd (Assign (ID "x") (AExpR (Div (Sum (Sub (N 10) (N 2)) (Mul (N 4) (N 3)) ) (Mul (N 2) (N 5))) ))] , [], fromList [ (ValId "x", L 1) , (ValId "y", L 2) , (ValId "z", L 3)], empty)
 
 -------------------------------------------------------------------------------------
--- process ( [CtCmd (CSeq (Assign (ID "x") (AExpR (N 5))) (CSeq (Assign (ID"y") (AExpR (N 3))) (Loop (GT (ID "x") (N 2)) (CSeq (Assign (ID "y") (AExpR (Sum (ID "y") (N 10)))) (Assign (ID "x") (AExpR (Sub (ID "x") (N 1))))))))],[],fromList [ (ValId "x", L 1) , (ValId "y", L 2) , (ValId "z", L 3)], empty)
+-- process ( [CtCmd (CSeq (Assign (ValID "x") (AExpR (N 5))) (CSeq (Assign (ValID"y") (AExpR (N 3))) (Loop (GT (ID (ValID "x")) (N 2)) (CSeq (Assign (ValID "y") (AExpR (Sum (ID (ValID "y")) (N 10)))) (Assign (ValID "x") (AExpR (Sub (ID (ValID "x")) (N 1))))))))],[],fromList [ (ValId "x", L 1) , (ValId "y", L 2) , (ValId "z", L 3)], empty)
 -- x = 5
 -- y = 3
 -- while x>2
@@ -66,7 +66,7 @@ print = putStrLn "Hello World Idris"
 process: (List Ctrl, List Val, SortedMap Val Loc , SortedMap Loc Val) -> (List Ctrl, List Val, SortedMap Val Loc , SortedMap Loc Val)
 
 -- Stop Case
-process ([],list, env, stored) = ([],list, env, stored)
+process ([],[], env, stored) = ([],[], env, stored)
 
 -- Aritmetic Expression
 process ( (CtExp (AExpR (Sum n1 n2))) ::xs , listVal, env, stored ) = process ((CtExp (AExpR n1) :: (CtExp (AExpR n2) :: (CtExpOp CtrlSum :: xs)) ), listVal, env, stored)
@@ -99,8 +99,8 @@ process ( (CtExpOp CtrlAnd)::xs , (ValBool val1) :: (ValBool val2 :: restoLista)
 process ( (CtExpOp CtrlOR)::xs , (ValBool val1) :: (ValBool val2 :: restoLista), env, stored ) = process (xs, (ValBool (calcBExp (OR (Boo val2) (Boo val1)))) ::restoLista, env, stored)
 
 --Commands
-process ( (CtCmd (Assign (ID c1) c2)) ::xs , listVal, env, stored) = process (CtExp c2 ::(CtCmdOp CtrlAssign::xs), ValId c1::listVal, env, stored)
-process ( (CtExp (AExpR (ID c1) )) ::xs , listVal, env, stored) = process (xs, (lookup'' (lookup' (ValId c1) (env)) (stored) )::listVal, env, stored)
+process ( (CtCmd (Assign (ValID c1) c2)) ::xs , listVal, env, stored) = process (CtExp c2 ::(CtCmdOp CtrlAssign::xs), ValId c1::listVal, env, stored)
+process ( (CtExp (AExpR (ID (ValID c1)) )) ::xs , listVal, env, stored) = process (xs, (lookup'' (lookup' (ValId c1) (env)) (stored) )::listVal, env, stored)
 process ( (CtCmd (Loop b c)) ::xs , listVal, env, stored) = process (CtExp (BExpR b) ::(CtCmdOp CtrlLoop::xs), ValCmd (Loop b c)::listVal, env, stored)
 process ( (CtCmd (Cond b c1 c2)) ::xs , listVal, env, stored) = process (CtExp (BExpR b) ::(CtCmdOp CtrlCond::xs), ValCmd (Cond b c1 c2)::listVal, env, stored)
 process ( (CtCmd (CSeq c1 c2)) ::xs , listVal, env, stored) = process (CtCmd c1::(CtCmd c2::xs), listVal, env, stored)
