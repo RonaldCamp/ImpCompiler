@@ -1,5 +1,7 @@
 module tipos
 
+import Data.SortedMap
+
 %access public export
 
 data Id = ValID String
@@ -8,19 +10,25 @@ data AExp = Sum AExp AExp | Sub AExp AExp | Div AExp AExp | Mul AExp AExp | N In
 
 data BExp = Eq AExp AExp | Not BExp | LT AExp AExp | GT AExp AExp | LE AExp AExp | GE AExp AExp | And BExp BExp | OR BExp BExp | Boo Bool
 
-data Exp = AExpR AExp | BExpR BExp
+data Exp = AExpR AExp | BExpR BExp | Ref Exp | DeRef Id | ValRef Id
 
-data Cmd = Assign Id Exp | Loop BExp Cmd | Cond BExp Cmd Cmd | CSeq Cmd Cmd | NOP
+data Dec = Bind Id Exp | DSeq Dec Dec
 
-data CmdOp = CtrlAssign | CtrlLoop | CtrlCond | CtrlCSeq
+data Cmd = Assign Id Exp | Loop BExp Cmd | Cond BExp Cmd Cmd | CSeq Cmd Cmd | Blk Dec Cmd | NOP
 
-data ExpOp = CtrlSum | CtrlSub | CtrlDiv | CtrlMul | CtrlNot | CtrlLT | CtrlGT | CtrlLE | CtrlGE | CtrlAnd | CtrlOR | CtrlEq
+data CmdOp = CtrlAssign | CtrlLoop | CtrlCond | CtrlCSeq | CtrlBlkDec | CtrlBlkCmd
 
-data Ctrl = CtExp Exp | CtExpOp ExpOp | CtCmd Cmd | CtCmdOp CmdOp
+data ExpOp = CtrlSum | CtrlSub | CtrlDiv | CtrlMul | CtrlNot | CtrlLT | CtrlGT | CtrlLE | CtrlGE | CtrlAnd | CtrlOR | CtrlEq | CtrlRef | CtrlDeRef | CtrlValRef
 
-data Val = ValInt Int | ValBool Bool | ValId String | ValCmd Cmd
+data DecOp = CtrlBind | CtrlDSeq
+
+data Ctrl = CtExp Exp | CtExpOp ExpOp | CtCmd Cmd | CtCmdOp CmdOp | CtDecOp DecOp | CtDec Dec
 
 data Loc = L Int
+
+data Val = ValInt Int | ValBool Bool | ValId String | ValCmd Cmd | ValLoc Loc | ValListLoc (List Loc) | ValEnv (SortedMap Val Loc)
+
+
 
 implementation Eq Loc where
   (L a) == (L b) = a == b
