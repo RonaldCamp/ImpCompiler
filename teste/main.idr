@@ -1,4 +1,5 @@
 module Main
+
 data Token = TokenVarId String
        | TokenAssign
        | TokenEq
@@ -23,22 +24,31 @@ data Token = TokenVarId String
        | TokenFalse
        | TokenNop
 
-transformaString: Show a => a -> String
-transformaString n = show n
-
 implementation Show Token where
-  show (TokenInt n) = "TokenInt " ++ transformaString n
+  show (TokenInt n) = "TokenInt " ++ show n
   show (TokenNop) = "TokenNop"
-
-retiraMaybe: Maybe Int -> Int
-retiraMaybe (Just x) = x
-retiraMaybe Nothing = 0
-
+  show (TokenPlus) = "TokenPlus"
+  show (TokenMinus) = "TokenMinus"
+  show (TokenTimes) = "TokenTimes"
+  show (TokenDiv) = "TokenDiv"
+  show (TokenLParen) = "TokenLParen"
+  show (TokenRParen) = "TokenRParen"
+  show (TokenTrue) = "TokenTrue"
+  show (TokenFalse) = "TokenFalse"
 
 tokenizer : String -> Token
 tokenizer "" = TokenNop
-tokenizer str = if all isDigit (unpack str) then TokenInt (cast str) else TokenNop
-
+tokenizer "+" = TokenPlus
+tokenizer "-" = TokenMinus
+tokenizer "*" = TokenTimes
+tokenizer "/" = TokenDiv
+tokenizer "(" = TokenLParen
+tokenizer ")" = TokenRParen
+tokenizer "True" = TokenTrue
+tokenizer "False" = TokenFalse
+tokenizer str = case all isDigit (unpack str) of
+  True => TokenInt (cast str)
+  False => TokenNop
 
 main : IO ()
 main = repl "Enter a string: " show_palindrome
