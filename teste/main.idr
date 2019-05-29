@@ -50,16 +50,18 @@ tokenizer str = case all isDigit (unpack str) of
   True => TokenInt (cast str)
   False => TokenNop
 
+read_token: List Char -> String -> List Token -> List Token
+read_token [] v list = if v == "" then reverse list else reverse (tokenizer v ::list)
+read_token (' ' :: xs) v list = read_token xs v list
+read_token ('+':: xs) v list = if v=="" then read_token xs v (TokenPlus :: list) else read_token xs "" (TokenPlus :: (tokenizer v :: list))
+read_token ('-':: xs) v list = if v=="" then read_token xs v (TokenMinus :: list) else read_token xs "" (TokenMinus :: (tokenizer v :: list))
+read_token ('*':: xs) v list = if v=="" then read_token xs v (TokenTimes :: list) else read_token xs "" (TokenTimes :: (tokenizer v :: list))
+read_token ('/':: xs) v list = if v=="" then read_token xs v (TokenDiv :: list) else read_token xs "" (TokenDiv :: (tokenizer v :: list))
+read_token (x :: xs) v list = read_token xs ( v ++ (singleton x)) list
+
 main : IO ()
-main = repl "Enter a string: " show_palindrome
+main = repl "Enter a string: " read_input
   where
-    show_palindrome : String -> String
-    show_palindrome x = show (map tokenizer (words x)) ++ "\n"
+    read_input : String -> String
+    read_input x = show (read_token (unpack x) "" []) ++ "\n"
 
-
-readNumber : IO (Maybe Nat)
-readNumber = do
-    input <- getLine
-    if all isDigit (unpack input)
-      then pure (Just (cast input))
-      else pure Nothing
