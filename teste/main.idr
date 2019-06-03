@@ -73,10 +73,10 @@ tokenizer "<" = TokenMenor
 tokenizer ">=" = TokenMaiorIgual
 tokenizer "<=" = TokenMenorIgual
 tokenizer "==" = TokenEq
-tokenizer "&&" = TokenAnd
-tokenizer "||" = TokenOr
--- tokenizer "and" = TokenAnd
--- tokenizer "or" = TokenOr
+-- tokenizer "&&" = TokenAnd
+-- tokenizer "||" = TokenOr
+tokenizer "and" = TokenAnd
+tokenizer "or" = TokenOr
 tokenizer "not" = TokenNot
 tokenizer "True" = TokenTrue
 tokenizer "False" = TokenFalse
@@ -90,7 +90,7 @@ tokenizer str = case all isDigit (unpack str) of
 
 read_token: List Char -> String -> List Token -> List Token
 read_token [] v list = if v == "" then reverse list else reverse (tokenizer v ::list)
-read_token (' ' :: xs) v list = read_token xs v list
+read_token (' ' :: xs) v list = if v=="" then read_token xs v list else read_token xs "" (tokenizer v :: list)
 read_token ('(':: xs) v list = if v=="" then read_token xs v (TokenLParen :: list) else read_token xs "" (TokenLParen :: (tokenizer v :: list))
 read_token (')':: xs) v list = if v=="" then read_token xs v (TokenRParen :: list) else read_token xs "" (TokenRParen :: (tokenizer v :: list))
 read_token ('+':: xs) v list = if v=="" then read_token xs v (TokenPlus :: list) else read_token xs "" (TokenPlus :: (tokenizer v :: list))
@@ -104,8 +104,8 @@ read_token ('>':: xs) v list = if v=="" then read_token xs v (TokenMaior :: list
 read_token ('<':: xs) v list = if v=="" then read_token xs v (TokenMenor :: list) else read_token xs "" (TokenMenor :: (tokenizer v :: list))
 -- read_token ('a'::'n'::'d'::xs) v list = if v=="" then read_token xs v (TokenAnd :: list) else read_token xs "" (TokenAnd :: (tokenizer v :: list))
 -- read_token ('o'::'r'::xs) v list = if v=="" then read_token xs v (TokenOr :: list) else read_token xs "" (TokenOr :: (tokenizer v :: list))
-read_token ('&'::'&'::xs) v list = if v=="" then read_token xs v (TokenAnd :: list) else read_token xs "" (TokenAnd :: (tokenizer v :: list))
-read_token ('|'::'|'::xs) v list = if v=="" then read_token xs v (TokenOr :: list) else read_token xs "" (TokenOr :: (tokenizer v :: list))
+-- read_token ('&'::'&'::xs) v list = if v=="" then read_token xs v (TokenAnd :: list) else read_token xs "" (TokenAnd :: (tokenizer v :: list))
+-- read_token ('|'::'|'::xs) v list = if v=="" then read_token xs v (TokenOr :: list) else read_token xs "" (TokenOr :: (tokenizer v :: list))
 read_token (':'::'='::xs) v list = if v=="" then read_token xs v (TokenAssign :: list) else read_token xs "" (TokenAssign :: (tokenizer v :: list))
 read_token ('{':: xs) v list = if v=="" then read_token xs v (TokenLBrace :: list) else read_token xs "" (TokenLBrace :: (tokenizer v :: list))
 read_token ('}':: xs) v list = if v=="" then read_token xs v (TokenRBrace :: list) else read_token xs "" (TokenRBrace :: (tokenizer v :: list))
