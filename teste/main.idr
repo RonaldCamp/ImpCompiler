@@ -23,6 +23,7 @@ data Token = TokenVarId String
        | TokenThen
        | TokenElse
        | TokenWhile
+       | TokenDo
        | TokenLet
        | TokenIn
        | TokenVar
@@ -53,6 +54,14 @@ implementation Show Token where
   show (TokenLBrace) = "TokenLBrace"
   show (TokenRBrace) = "TokenRBrace"
   show (TokenAssign) = "TokenAssign"
+  show (TokenIf) = "TokenIf"
+  show (TokenThen) = "TokenThen"
+  show (TokenElse) = "TokenElse"
+  show (TokenWhile) = "TokenWhile"
+  show (TokenDo) = "TokenDo"
+  show (TokenLet) = "TokenLet"
+  show (TokenIn) = "TokenIn"
+  show (TokenVar) = "TokenVar"
 
 
 isVarId : List Char -> Bool
@@ -83,6 +92,14 @@ tokenizer "False" = TokenFalse
 tokenizer ":=" = TokenAssign
 tokenizer "{" = TokenLBrace
 tokenizer "}" = TokenRBrace
+tokenizer "if" = TokenIf
+tokenizer "then" = TokenThen
+tokenizer "else" = TokenElse
+tokenizer "let" = TokenLet
+tokenizer "in" = TokenIn
+tokenizer "var" = TokenVar
+tokenizer "while" = TokenWhile
+tokenizer "do" = TokenDo
 tokenizer str = case all isDigit (unpack str) of
   True => TokenInt (cast str)
   False => if isVarId (unpack str) then TokenVarId str else TokenNop
