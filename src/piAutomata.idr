@@ -25,9 +25,17 @@ transforma:Maybe a -> a
 transforma (Just v) = v
 
 
+
+maxList: List Loc -> Int
+maxList [] = 0
+maxList (x :: xs) = auxiliar x xs where
+  auxiliar: Loc -> List Loc -> Int
+  auxiliar (L x) [] = x
+  auxiliar x  (l :: ls) = if x > l then auxiliar x ls  else auxiliar l ls
 -- retorna um Loc do tamanho do mapa + 1
 getLocPlus1FromMap: SortedMap Loc Val -> Loc
-getLocPlus1FromMap map = (L ((cast (length (keys map)))+1))
+getLocPlus1FromMap map = L ((maxList (keys map)) + 1)
+
 
 -- Retorna um stored com a adição de uma nova location como chave e um valor v
 extendStored: SortedMap Loc Val -> Val -> SortedMap Loc Val
@@ -51,6 +59,7 @@ deleteLocsStore (x :: xs) store = deleteLocsStore xs (delete x store)
 
 --fromList [ (L 1, ValId "x") , (L 2, ValId "y") , (L 3, ValId "z") ]
 
+-- [L 1, L 2, L 6, L 3]
 -------------------------------------------------------------------------------------
 -- process ( [CtCmd (CSeq (Assign (ValID "x") (AExpR (N 5))) (CSeq (Assign (ValID"y") (AExpR (N 3))) (Loop (GT (ID (ValID "x")) (N 2)) (CSeq (Assign (ValID "y") (AExpR (Sum (ID (ValID "y")) (N 10)))) (Assign (ValID "x") (AExpR (Sub (ID (ValID "x")) (N 1))))))))],[],fromList [ (ValId "x", L 1) , (ValId "y", L 2) , (ValId "z", L 3)], empty, [])
 -- x = 5
