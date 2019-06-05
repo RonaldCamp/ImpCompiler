@@ -21,50 +21,55 @@ calcBExp (GT (N n1) (N n2)) = n1 > n2
 calcBExp (And (Boo b1) (Boo b2)) = (&&) b1 b2
 calcBExp (OR (Boo b1) (Boo b2)) = (||) b1 b2
 
+transforma:Maybe a -> a
+transforma (Just v) = v
 
+
+-- retorna um Loc do tamanho do mapa + 1
 getLocPlus1FromMap: SortedMap Loc Val -> Loc
 getLocPlus1FromMap map = (L ((cast (length (keys map)))+1))
 
-
+-- Retorna um stored com a adição de uma nova location como chave e um valor v
 extendStored: SortedMap Loc Val -> Val -> SortedMap Loc Val
 extendStored map v = insert (getLocPlus1FromMap map) (v) map
 
+
+-- Atualiza segundo ambiente com os valores do primeiro, e cria novas chave-valor caso nao exista
+-- ex: addIntersectionNewEnv ([ (ValId "k", L 3) , (ValId "y", L 4) , (ValId "z", L 5)]) ([ (ValId "x", L 1) , (ValId "y", L 2) , (ValId "z", L 3)])
+addIntersectionNewEnv: List (Val,Loc)-> List (Val,Loc) -> SortedMap Val Loc
+addIntersectionNewEnv [] env = fromList env
+addIntersectionNewEnv ( (key,value) :: e) env = addIntersectionNewEnv e (toList (insert key value (fromList env)))
+
+
+-- deleta todos as chave-valor da memoria dada uma lista de chaves (Loc)
+deleteLocsStore: List Loc -> SortedMap Loc Val -> SortedMap Loc Val
+deleteLocsStore [] store = store
+deleteLocsStore (x :: xs) store = deleteLocsStore xs (delete x store)
 
 ----------------SortedMaps---------------------------------
 --fromList [ (ValId "x", L 1) , (ValId "y", L 2) , (ValId "z", L 3)]
 
 --fromList [ (L 1, ValId "x") , (L 2, ValId "y") , (L 3, ValId "z") ]
 
-----------------------------------------------------------------------
-
---TEST PROCESS--
--- process ([(CtExp (AExpR (Div (Sum (Sub (N 10) (N 2)) (Mul (N 4) (N 3)) ) (Mul (N 2) (N 5))) ) )],[],empty,[])  -- > ((10-2)+(4*3)) / (2*5)  = 2
--- process ([CtExp (BExpR (Not (Boo False)))], [], empty, []) -> True
--- process ([CtExp (BExpR (Not (Boo True)))], [], empty, []) -> False
--- process ([CtExp (BExpR (Eq (N 2) (N 4)))], [], empty, [])  -> False
--- process ([CtExp (BExpR (Eq (N 2) (N 2)))], [], empty, [])  -> True
--- process ([CtCmd (Assign (ID "x") (AExpR (Div (Sum (Sub (N 10) (N 2)) (Mul (N 4) (N 3)) ) (Mul (N 2) (N 5))) ))] , [], fromList [ (ValId "x", L 1) , (ValId "y", L 2) , (ValId "z", L 3)], empty)
-
 -------------------------------------------------------------------------------------
--- process ( [CtCmd (CSeq (Assign (ValID "x") (AExpR (N 5))) (CSeq (Assign (ValID"y") (AExpR (N 3))) (Loop (GT (ID (ValID "x")) (N 2)) (CSeq (Assign (ValID "y") (AExpR (Sum (ID (ValID "y")) (N 10)))) (Assign (ValID "x") (AExpR (Sub (ID (ValID "x")) (N 1))))))))],[],fromList [ (ValId "x", L 1) , (ValId "y", L 2) , (ValId "z", L 3)], empty)
+-- process ( [CtCmd (CSeq (Assign (ValID "x") (AExpR (N 5))) (CSeq (Assign (ValID"y") (AExpR (N 3))) (Loop (GT (ID (ValID "x")) (N 2)) (CSeq (Assign (ValID "y") (AExpR (Sum (ID (ValID "y")) (N 10)))) (Assign (ValID "x") (AExpR (Sub (ID (ValID "x")) (N 1))))))))],[],fromList [ (ValId "x", L 1) , (ValId "y", L 2) , (ValId "z", L 3)], empty, [])
 -- x = 5
 -- y = 3
 -- while x>2
 --   y = y+10
 --   x = x-1
 --------------------------------------------------------------------------------------
+getLocFromValLoc: Val -> Loc
+getLocFromValLoc (ValLoc l) = l
 
--- process ([(CtCmd (CSeq (Assign (ID "y") (AExpR (N 3))) (Loop (GT (ID "y") (N 2)) ((Assign (ID "y") (AExpR (Sub (ID "y") (N 1) )) ))) ))], [], fromList [ (ValId "x", L 1) , (ValId "y", L 2) , (ValId "z", L 3)], empty)
--- process ([CtCmd (CSeq (Assign (ID "x") (AExpR (N 2)) ) (Assign (ID "x") ( AExpR (Sub (ID "x") (N 1)) ) ) )], [], fromList [ (ValId "x", L 1) , (ValId "y", L 2) , (ValId "z", L 3)], empty)
 
 lookup': Maybe Loc -> SortedMap Loc Val -> Val
-lookup' (Just loc) sto =  transforma (lookup loc sto) where
-  transforma:Maybe Val -> Val
-  transforma (Just val) = val
--- lookup' Nothing sto =
+lookup' (Just loc) sto =  transforma (lookup loc sto)
+lookup' Nothing sto = ValNop
 
 inserir : Maybe Loc -> Val -> SortedMap Loc Val -> SortedMap Loc Val
 inserir (Just loc) v stored = insert loc v stored
+inserir Nothing v stored = stored
 
 process: (List Ctrl, List Val, SortedMap Val Loc , SortedMap Loc Val, List Loc) -> (List Ctrl, List Val, SortedMap Val Loc , SortedMap Loc Val, List Loc)
 
@@ -117,6 +122,11 @@ process ( (CtCmdOp CtrlCond :: xs , ValBool False :: (ValCmd (Cond b2 c1 c2) :: 
 --Declarations
 process ( CtExp (Ref exp) :: xs , listVal, env, stored, listLoc) = process (CtExp exp ::(CtExpOp CtrlRef::xs), listVal, env, stored, listLoc)
 process ( CtCmd (Blk d c) :: xs , listVal, env, stored, listLoc) = process ( CtDec d :: (CtCmdOp CtrlBlkDec :: (CtCmd c :: (CtCmdOp CtrlBlkCmd::xs))), ValListLoc listLoc :: listVal, env, stored, [])
+process ( CtDec (Bind (ValID x) exp) :: xs , listVal, env, stored, listLoc) = process ( CtExp exp :: (CtDecOp CtrlBind::xs), ValId x ::listVal, env, stored, listLoc)
+process ( CtExp (DeRef (ValID x)) :: xs , listVal, env, stored, listLoc) = process ( xs, (ValLoc (transforma (lookup (ValId x) env)))::listVal, env, stored, listLoc)
+process ( CtExp (ValRef (ValID x)) :: xs , listVal, env, stored, listLoc) = process ( xs, (lookup' (Just (getLocFromValLoc (lookup' (lookup (ValId x) env) stored)) ) stored)::listVal, env, stored, listLoc)
 
 process ( CtExpOp CtrlRef :: xs , v :: listVal, env, stored, listLoc) = process (xs, ValLoc (getLocPlus1FromMap stored) ::listVal, env, extendStored stored v, getLocPlus1FromMap stored ::listLoc)
-process ( CtCmdOp CtrlBlkDec :: xs , ValEnv e :: listVal, env, stored, listLoc) = process (xs, ValEnv env ::listVal, e, stored, listLoc)
+process ( CtCmdOp CtrlBlkDec :: xs , ValEnv e :: listVal, env, stored, listLoc) = process (xs, ValEnv env ::listVal, addIntersectionNewEnv (toList e) (toList env), stored, listLoc)
+process ( CtCmdOp CtrlBlkCmd :: xs , ValEnv e :: (ValListLoc l :: listVal), env, stored, listLoc) = process (xs, listVal, e, deleteLocsStore l stored, l)
+process ( CtDecOp CtrlBind :: xs , ValLoc l :: (w :: listVal), env, stored, listLoc) = process (xs, ValEnv (insert w l empty) ::listVal, env, stored, listLoc)
