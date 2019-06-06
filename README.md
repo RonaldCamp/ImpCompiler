@@ -6,7 +6,9 @@ Projeto Construindo um compilador para a linguagem Imp , utilizando o Pi Framewo
 Pode-se encontrar mais sobre a linguagem no link https://www.idris-lang.org/
 
 ## Instalação do Idris
-make install
+```
+make all
+```
 
 ## Execução
 Para execução do piAutomata deve rodar os seguintes comandos:
