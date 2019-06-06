@@ -8,7 +8,7 @@ Pode-se encontrar mais sobre a linguagem no link https://www.idris-lang.org/
 ## Instalação do Idris
 make install
 
-##Execução
+## Execução
 Para execução do piAutomata deve rodar os seguintes comandos:
 cd src
 idris -p contrib piAutomata.idr
@@ -27,7 +27,7 @@ process ( [CtCmd (CSeq (Assign (ValID "x") (AExpR (N 5))) (CSeq (Assign (ValID"y
 
 Para encerrar a execução :q
 
-###Parser
+### Parser
 Por enquanto, o parser não está concluído, só temos o lexer pronto.
 Para executa-lo deve rodar os seguintes comandos:
 
