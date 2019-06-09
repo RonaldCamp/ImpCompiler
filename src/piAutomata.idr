@@ -2,8 +2,14 @@ module piAutomata
 
 import tipos
 import Data.SortedMap
+import Control.Monad.Identity
+import Control.Monad.Writer
 
 %access public export
+
+
+diga : a -> Writer (List a) ()
+diga a = tell [a]
 
 calcAExp : AExp -> Int
 calcAExp (Sum (N n1) (N n2)) = n1 + n2
@@ -25,14 +31,15 @@ transforma:Maybe a -> a
 transforma (Just v) = v
 
 
-
+-- retorna o maior Loc da lista de Locs
 maxList: List Loc -> Int
 maxList [] = 0
 maxList (x :: xs) = auxiliar x xs where
   auxiliar: Loc -> List Loc -> Int
   auxiliar (L x) [] = x
   auxiliar x  (l :: ls) = if x > l then auxiliar x ls  else auxiliar l ls
--- retorna um Loc do tamanho do mapa + 1
+
+-- retorna o maior Loc do mapa + 1
 getLocPlus1FromMap: SortedMap Loc Val -> Loc
 getLocPlus1FromMap map = L ((maxList (keys map)) + 1)
 
@@ -54,6 +61,11 @@ deleteLocsStore: List Loc -> SortedMap Loc Val -> SortedMap Loc Val
 deleteLocsStore [] store = store
 deleteLocsStore (x :: xs) store = deleteLocsStore xs (delete x store)
 
+
+---------------
+--process ( [CtExp (AExpR (Sum (N 1) (N 2) ) )],[], empty, empty, [])
+
+
 ----------------SortedMaps---------------------------------
 --fromList [ (ValId "x", L 1) , (ValId "y", L 2) , (ValId "z", L 3)]
 
@@ -61,13 +73,21 @@ deleteLocsStore (x :: xs) store = deleteLocsStore xs (delete x store)
 
 -- [L 1, L 2, L 6, L 3]
 -------------------------------------------------------------------------------------
--- process ( [CtCmd (CSeq (Assign (ValID "x") (AExpR (N 5))) (CSeq (Assign (ValID"y") (AExpR (N 3))) (Loop (GT (ID (ValID "x")) (N 2)) (CSeq (Assign (ValID "y") (AExpR (Sum (ID (ValID "y")) (N 10)))) (Assign (ValID "x") (AExpR (Sub (ID (ValID "x")) (N 1))))))))],[],fromList [ (ValId "x", L 1) , (ValId "y", L 2) , (ValId "z", L 3)], empty, [])
+--process ( [CtCmd (Blk (Bind (ValID "x") (Ref (AExpR (N 5)))) (Blk (Bind (ValID "y") (Ref (AExpR (N 3)))) (Loop (GT (ID (ValID "x")) (N 2)) (CSeq (Assign (ValID "y") (AExpR (Sum (ID (ValID "y")) (N 10)))) (Assign (ValID "x") (AExpR (Sub (ID (ValID "x")) (N 1)))))) ))],[], empty, empty, [])
 -- x = 5
 -- y = 3
 -- while x>2
 --   y = y+10
 --   x = x-1
 --------------------------------------------------------------------------------------
+
+
+--[CtCmd (Blk (Bind (ValID "x") (Ref (AExpR (N 5)))) (Blk (Bind (ValID "y") (Ref (AExpR (N 3)))) (Loop (GT (ID (ValID "x")) (N 2)) (CSeq (Assign (ValID "y") (AExpR (Sum (ID (ValID "y")) (N 10)))) (Assign (ValID "x") (AExpR (Sub (ID (ValID "x")) (N 1)))))) ))]
+
+printPi: (List Ctrl, List Val, SortedMap Val Loc , SortedMap Loc Val, List Loc) -> String
+printPi (listCrtl, listaVal, env, sto, listLoc) = show listCrtl ++ show listaVal ++ show (toList env) ++ show (toList sto) ++ show listLoc
+
+
 getLocFromValLoc: Val -> Loc
 getLocFromValLoc (ValLoc l) = l
 
@@ -87,6 +107,7 @@ process ([],[], env, stored, listLoc) = ([],[], env, stored, listLoc)
 
 -- Aritmetic Expression
 process ( (CtExp (AExpR (Sum n1 n2))) ::xs , listVal, env, stored, listLoc) = process ((CtExp (AExpR n1) :: (CtExp (AExpR n2) :: (CtExpOp CtrlSum :: xs)) ), listVal, env, stored, listLoc)
+
 process ( (CtExp (AExpR (Sub n1 n2))) ::xs , listVal, env, stored, listLoc) = process ((CtExp (AExpR n1) :: (CtExp (AExpR n2) :: (CtExpOp CtrlSub :: xs)) ), listVal, env, stored, listLoc)
 process ( (CtExp (AExpR (Mul n1 n2))) ::xs , listVal, env, stored, listLoc) = process ((CtExp (AExpR n1) :: (CtExp (AExpR n2) :: (CtExpOp CtrlMul :: xs)) ), listVal, env, stored, listLoc)
 process ( (CtExp (AExpR (Div n1 n2))) ::xs , listVal, env, stored, listLoc) = process ((CtExp (AExpR n1) :: (CtExp (AExpR n2) :: (CtExpOp CtrlDiv :: xs)) ), listVal, env, stored, listLoc)
@@ -135,7 +156,9 @@ process ( CtDec (Bind (ValID x) exp) :: xs , listVal, env, stored, listLoc) = pr
 process ( CtExp (DeRef (ValID x)) :: xs , listVal, env, stored, listLoc) = process ( xs, (ValLoc (transforma (lookup (ValId x) env)))::listVal, env, stored, listLoc)
 process ( CtExp (ValRef (ValID x)) :: xs , listVal, env, stored, listLoc) = process ( xs, (lookup' (Just (getLocFromValLoc (lookup' (lookup (ValId x) env) stored)) ) stored)::listVal, env, stored, listLoc)
 
+--process ( CtExpOp CtrlCns :: xs , v :: listVal, env, stored, listLoc) = process (xs, listVal, env, v, listLoc)
 process ( CtExpOp CtrlRef :: xs , v :: listVal, env, stored, listLoc) = process (xs, ValLoc (getLocPlus1FromMap stored) ::listVal, env, extendStored stored v, getLocPlus1FromMap stored ::listLoc)
 process ( CtCmdOp CtrlBlkDec :: xs , ValEnv e :: listVal, env, stored, listLoc) = process (xs, ValEnv env ::listVal, addIntersectionNewEnv (toList e) (toList env), stored, listLoc)
 process ( CtCmdOp CtrlBlkCmd :: xs , ValEnv e :: (ValListLoc l :: listVal), env, stored, listLoc) = process (xs, listVal, e, deleteLocsStore l stored, l)
+process ( CtDecOp CtrlBind :: xs , ValLoc l :: (w :: (ValEnv e :: listVal)), env, stored, listLoc) = process (xs, ValEnv (insert w l e) ::listVal, env, stored, listLoc)
 process ( CtDecOp CtrlBind :: xs , ValLoc l :: (w :: listVal), env, stored, listLoc) = process (xs, ValEnv (insert w l empty) ::listVal, env, stored, listLoc)
