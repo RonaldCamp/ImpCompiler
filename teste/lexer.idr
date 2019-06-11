@@ -33,6 +33,41 @@ data Token = TokenVarId String
        | TokenRBrace
        | TokenNop
 
+
+implementation Eq Token where
+  (==) (TokenInt n) (TokenInt m) = n==m
+  (==) (TokenNop) (TokenNop) = True
+  (==) (TokenPlus) (TokenPlus) = True
+  (==) (TokenMinus) (TokenMinus) = True
+  (==) (TokenTimes) (TokenTimes) = True
+  (==) (TokenDiv) (TokenDiv) = True
+  (==) (TokenLParen) (TokenLParen) = True
+  (==) (TokenRParen) (TokenRParen) = True
+  (==) (TokenTrue) (TokenTrue) = True
+  (==) (TokenFalse) (TokenFalse) = True
+  (==) (TokenMaior) (TokenMaior) = True
+  (==) (TokenMenor) (TokenMenor) = True
+  (==) (TokenMaiorIgual) (TokenMaiorIgual) = True
+  (==) (TokenMenorIgual) (TokenMenorIgual) = True
+  (==) (TokenEq) (TokenEq) = True
+  (==) (TokenAnd) (TokenAnd) = True
+  (==) (TokenOr) (TokenOr) = True
+  (==) (TokenNot) (TokenNot) = True
+  (==) (TokenVarId id) (TokenVarId id') = id == id'
+  (==) (TokenLBrace) (TokenLBrace) = True
+  (==) (TokenRBrace) (TokenRBrace) = True
+  (==) (TokenAssign) (TokenAssign) = True
+  (==) (TokenIf) (TokenIf) = True
+  (==) (TokenThen) (TokenThen) = True
+  (==) (TokenElse) (TokenElse) = True
+  (==) (TokenWhile) (TokenWhile) = True
+  (==) (TokenDo) (TokenDo) = True
+  (==) (TokenLet) (TokenLet) = True
+  (==) (TokenIn) (TokenIn) = True
+  (==) (TokenVar) (TokenVar) = True
+  (==) _ _ = False
+
+
 implementation Show Token where
   show (TokenInt n) = "TokenInt " ++ show n
   show (TokenNop) = "TokenNop"
