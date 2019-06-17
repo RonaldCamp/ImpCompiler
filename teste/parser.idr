@@ -54,13 +54,37 @@ mutual
   arithExp : List Token -> (AExp, List Token)
   arithExp = sum
 
--- removeParen : AExp -> AExp
--- removeParen (Sum a b) = Sum (removeParen a) (removeParen b)
--- removeParen (Sub a b) = Sub (removeParen a) (removeParen b)
--- removeParen (Mul a b) = Mul (removeParen a) (removeParen b)
--- removeParen (Div a b) = Div (removeParen a) (removeParen b)
--- removeParen (Paren e) = removeParen e
--- removeParen (N n) = N n
+  bool : List Token -> (BExp, List Token)
+  bool (TokenTrue::xs) = (Boo True, xs)
+  bool (TokenFalse::xs) = (Boo False, xs)
+
+  parenBExp : List Token -> (BExp, List Token)
+  parenBExp (TokenTrue::xs) = bool (TokenTrue::xs)
+  parenBExp (TokenFalse::xs) = bool (TokenFalse::xs)
+  parenBExp l = let (e,r) = arithExp l | boolExp l in factorBExpAux e r where
+    factorBExpAux : AExp -> List Token -> (BExp, List Token)
+    factorBExpAux e (TokenEq::xs) = let (exp', r2) = arithExp xs in ((Eq e exp'), r2)
+    factorBExpAux e (TokenMaior::xs) = let (exp', r2) = arithExp xs in ((GT e exp'), r2)
+    factorBExpAux e (TokenMenor::xs) = let (exp', r2) = arithExp xs in ((LT e exp'), r2)
+    factorBExpAux e (TokenMaiorIgual::xs) = let (exp', r2) = arithExp xs in ((GE e exp'), r2)
+    factorBExpAux e (TokenMenorIgual::xs) = let (exp', r2) = arithExp xs in ((LE e exp'), r2)
+
+  parenBExp ((TokenLParen)::xs) = let (e,r) = boolExp xs in parenBExpAux e r where
+    parenBExpAux : BExp -> List Token -> (BExp, List Token)
+    parenBExpAux e (TokenRParen :: ys) = (e,ys)
+    parenBExpAux e l = (e,l)
+
+  logic : List Token -> (BExp, List Token)
+  logic l = let (exp, r) = parenBExp l in logicAux exp r where
+    logicAux : BExp -> List Token -> (BExp, List Token)
+    logicAux e (TokenOr::xs) = let (exp', r2) = parenBExp xs in logicAux (OR e exp') r2
+    logicAux e (TokenAnd::xs) = let (exp', r2) = parenBExp xs in logicAux (And e exp') r2
+    -- logicAux e (TokenNot::xs) = logicAux (Not e) xs
+    logicAux e l = (e,l)
+
+  boolExp : List Token -> (BExp, List Token)
+  boolExp = logic
+
 
 parse : (AExp, List Token) -> AExp
 parse (exp, l) = exp

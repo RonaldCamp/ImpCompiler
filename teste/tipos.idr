@@ -47,21 +47,21 @@ implementation Show Id where
   show (ValID x) = "ValID " ++ show x
 
 implementation Show AExp where
-  show (Sum a b) = "Sum (" ++ show a ++ " " ++ show b ++ ")"
-  show (Sub a b) = "Sub (" ++ show a ++ " " ++ show b ++ ")"
-  show (Mul a b) = "Mul (" ++ show a ++ " " ++ show b ++ ")"
-  show (Div a b) = "Div (" ++ show a ++ " " ++ show b ++ ")"
+  show (Sum a b) = "Sum (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (Sub a b) = "Sub (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (Mul a b) = "Mul (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (Div a b) = "Div (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
   show (N a) = "N " ++ show a
   show (ID a) = "ID " ++ show a
 
 implementation Show BExp where
-  show (Eq a b) = "Eq " ++ show a ++ " " ++ show b
-  show (GT a b) = "GT " ++ show a ++ " " ++ show b
-  show (LT a b) = "LT " ++ show a ++ " " ++ show b
-  show (LE a b) = "LE " ++ show a ++ " " ++ show b
-  show (GE a b) = "GE " ++ show a ++ " " ++ show b
-  show (And a b) = "And " ++ show a ++ " " ++ show b
-  show (OR a b) = "OR " ++ show a ++ " " ++ show b
+  show (Eq a b) = "Eq (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (GT a b) = "GT (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (LT a b) = "LT (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (LE a b) = "LE (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (GE a b) = "GE (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (And a b) = "And (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (OR a b) = "OR (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
   show (Boo a) = "Boo " ++ show a
   show (Not a) = "Not " ++ show a
 
