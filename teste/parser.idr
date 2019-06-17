@@ -56,6 +56,7 @@ mutual
   bool : List Token -> (Maybe BExp, List Token)
   bool (TokenTrue::xs) = (Just (Boo True), xs)
   bool (TokenFalse::xs) = (Just (Boo False), xs)
+  bool l = (Nothing, l)
 
   -- factorBExp : List Token -> (Maybe BExp, List Token)
   -- factorBexp = orParser bool parenBExp
@@ -72,44 +73,37 @@ mutual
   parenBExp l = (Nothing, l)
 
   conditExp : List Token -> (Maybe BExp, List Token)
-  conditExp l = let (exp, r) = factorBExp l in conditExpAux exp r where
-    conditExpAux : Maybe AExp -> List Token -> (Maybe AExp, List Token)
+  conditExp = orParser aux factorBExp
+
+  aux : List Token -> (Maybe BExp, List Token)
+  aux l = let (e,r) = arithExp l in conditExpAux e r where
+    conditExpAux : Maybe AExp -> List Token -> (Maybe BExp, List Token)
     conditExpAux Nothing r = (Nothing, r)
-    conditExpAux (Just e) ((TokenEq)::xs) = let (exp', r2) = factorBExp xs in case exp' of
-      Nothing => (Just e, (TokenEq::xs))
-      Just k => conditExpAux (Just (Eq e k)) r2
-    conditExpAux (Just e) ((TokenMaior)::xs) = let (exp', r2) = factorBExp xs in case exp' of
-      Nothing => (Just e, (TokenMaior::xs))
-      Just k => conditExpAux (Just (GT e k)) r2
-    conditExpAux (Just e) ((TokenMenor)::xs) = let (exp', r2) = factorBExp xs in case exp' of
-      Nothing => (Just e, (TokenMenor::xs))
-      Just k => conditExpAux (Just (LT e k)) r2
-    conditExpAux (Just e) ((TokenMaiorIgual)::xs) = let (exp', r2) = factorBExp xs in case exp' of
-      Nothing => (Just e, (TokenMaiorIgual::xs))
-      Just k => conditExpAux (Just (GE e k)) r2
-    conditExpAux (Just e) ((TokenMenorIgual)::xs) = let (exp', r2) = factorBExp xs in case exp' of
-      Nothing => (Just e, (TokenMenorIgual::xs))
-      Just k => conditExpAux (Just (LE e k)) r2
-    conditExpAux (Just e) l = ((Just e),l)
-
-  -- conditExp : List Token -> (BExp, List Token)
-  -- conditExp l = let (e,r) = arithExp l in conditExpAux e r where
-  --  conditExpAux : AExp -> List Token -> (BExp, List Token)
-  --  conditExpAux e (TokenEq::xs) = let (exp', r2) = arithExp xs in ((Eq e exp'), r2)
-  --  conditExpAux e (TokenMaior::xs) = let (exp', r2) = arithExp xs in ((GT e exp'), r2)
-  --  conditExpAux e (TokenMenor::xs) = let (exp', r2) = arithExp xs in ((LT e exp'), r2)
-  --  conditExpAux e (TokenMaiorIgual::xs) = let (exp', r2) = arithExp xs in ((GE e exp'), r2)
-  --  conditExpAux e (TokenMenorIgual::xs) = let (exp', r2) = arithExp xs in ((LE e exp'), r2)
-
+    conditExpAux (Just e) ((TokenEqual)::xs) = let (exp', r2) = arithExp xs in case exp' of
+      Nothing => (Nothing, (TokenEqual::xs))
+      Just k => ((Just (Equal e k)), r2)
+    conditExpAux (Just e) ((TokenMaior)::xs) = let (exp', r2) = arithExp xs in case exp' of
+      Nothing => (Nothing, (TokenMaior::xs))
+      Just k => ((Just (GT e k)), r2)
+    conditExpAux (Just e) ((TokenMenor)::xs) = let (exp', r2) = arithExp xs in case exp' of
+      Nothing => (Nothing, (TokenMenor::xs))
+      Just k => ((Just (LT e k)), r2)
+    conditExpAux (Just e) ((TokenMaiorIgual)::xs) = let (exp', r2) = arithExp xs in case exp' of
+      Nothing => (Nothing, (TokenMaiorIgual::xs))
+      Just k => ((Just (GE e k)), r2)
+    conditExpAux (Just e) ((TokenMenorIgual)::xs) = let (exp', r2) = arithExp xs in case exp' of
+      Nothing => (Nothing, (TokenMenorIgual::xs))
+      Just k => ((Just (LE e k)), r2)
+    conditExpAux (Just e) l' = (Nothing,l)
 
   logic : List Token -> (Maybe BExp, List Token)
   logic l = let (exp, r) = conditExp l in logicAux exp r where
     logicAux : Maybe BExp -> List Token -> (Maybe BExp, List Token)
     logicAux Nothing r = (Nothing, r)
-    logicAux (Just e) ((TokenOr)::xs) = let (exp', r2) = mul xs in case exp' of
+    logicAux (Just e) ((TokenOr)::xs) = let (exp', r2) = conditExp xs in case exp' of
       Nothing => (Just e, (TokenOr::xs))
       Just k => logicAux (Just (OR e k)) r2
-    logicAux (Just e) ((TokenAnd)::xs) = let (exp', r2) = mul xs in case exp' of
+    logicAux (Just e) ((TokenAnd)::xs) = let (exp', r2) = conditExp xs in case exp' of
       Nothing => (Just e, (TokenAnd::xs))
       Just k => logicAux (Just (And e k)) r2
     logicAux (Just e) l = ((Just e),l)

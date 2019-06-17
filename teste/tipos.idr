@@ -8,7 +8,7 @@ data Id = ValID String
 
 data AExp = Sum AExp AExp | Sub AExp AExp | Div AExp AExp | Mul AExp AExp | N Int | ID Id
 
-data BExp = Eq AExp AExp | Not BExp | LT AExp AExp | GT AExp AExp | LE AExp AExp | GE AExp AExp | And BExp BExp | OR BExp BExp | Boo Bool
+data BExp = Equal AExp AExp | Not BExp | LT AExp AExp | GT AExp AExp | LE AExp AExp | GE AExp AExp | And BExp BExp | OR BExp BExp | Boo Bool
 
 data Exp = AExpR AExp | BExpR BExp | Ref Exp | DeRef Id | ValRef Id
 
@@ -18,7 +18,7 @@ data Cmd = Assign Id Exp | Loop BExp Cmd | Cond BExp Cmd Cmd | CSeq Cmd Cmd | Bl
 
 data CmdOp = CtrlAssign | CtrlLoop | CtrlCond | CtrlCSeq | CtrlBlkDec | CtrlBlkCmd
 
-data ExpOp = CtrlSum | CtrlSub | CtrlDiv | CtrlMul | CtrlNot | CtrlLT | CtrlGT | CtrlLE | CtrlGE | CtrlAnd | CtrlOR | CtrlEq | CtrlRef | CtrlCns
+data ExpOp = CtrlSum | CtrlSub | CtrlDiv | CtrlMul | CtrlNot | CtrlLT | CtrlGT | CtrlLE | CtrlGE | CtrlAnd | CtrlOR | CtrlEqual | CtrlRef | CtrlCns
 
 data DecOp = CtrlBind | CtrlDSeq
 
@@ -29,7 +29,7 @@ data Loc = L Int
 data Val = ValInt Int | ValBool Bool | ValId String | ValCmd Cmd | ValLoc Loc | ValListLoc (List Loc) | ValEnv (SortedMap Val Loc) |ValNop
 
 --
--- implementation Eq Loc where
+-- implementation Equal Loc where
 --   (L a) == (L b) = a == b
 --   (L a) /= (L b) = a /= b
 --
@@ -37,7 +37,7 @@ data Val = ValInt Int | ValBool Bool | ValId String | ValCmd Cmd | ValLoc Loc | 
 --   compare (L a) (L b) = compare a b
 --
 --
--- implementation Eq Val where
+-- implementation Equal Val where
 --     (ValId a) == (ValId b) = a == b
 --
 -- implementation Ord Val where
@@ -55,7 +55,7 @@ implementation Show AExp where
   show (ID a) = "ID " ++ show a
 
 implementation Show BExp where
-  show (Eq a b) = "Eq (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (Equal a b) = "Equal (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
   show (GT a b) = "GT (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
   show (LT a b) = "LT (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
   show (LE a b) = "LE (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
@@ -104,7 +104,7 @@ implementation Show ExpOp where
   show CtrlGE = "CtrlGE"
   show CtrlAnd = "CtrlAnd"
   show CtrlOR = "CtrlOR"
-  show CtrlEq = "CtrlEq"
+  show CtrlEqual = "CtrlEqual"
   show CtrlRef = "CtrlRef"
   show CtrlCns = "CtrlCns"
 

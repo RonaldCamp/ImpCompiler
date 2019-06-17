@@ -9,4 +9,4 @@ main = repl "Enter a program: " read_input
   where
     read_input : String -> String
     -- read_input x = show (transformPi(parse(arithExp (read_token (unpack x) "" [])))) ++ "\n"
-    read_input x = show (arithExp (read_token (unpack x) "" [])) ++ "\n"
+    read_input x = show (boolExp (read_token (unpack x) "" [])) ++ "\n"
