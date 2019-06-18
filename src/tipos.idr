@@ -10,7 +10,7 @@ data AExp = Sum AExp AExp | Sub AExp AExp | Div AExp AExp | Mul AExp AExp | N In
 
 data BExp = Eq AExp AExp | Not BExp | LT AExp AExp | GT AExp AExp | LE AExp AExp | GE AExp AExp | And BExp BExp | OR BExp BExp | Boo Bool
 
-data Exp = AExpR AExp | BExpR BExp | Ref Exp | DeRef Id | ValRef Id
+data Exp = AExpR AExp | BExpR BExp | Ref Exp | DeRef Id | ValRef Id | Cns Exp
 
 data Dec = Bind Id Exp | DSeq Dec Dec
 
@@ -26,7 +26,9 @@ data Ctrl = CtExp Exp | CtExpOp ExpOp | CtCmd Cmd | CtDec Dec | CtCmdOp CmdOp | 
 
 data Loc = L Int
 
-data Val = ValInt Int | ValBool Bool | ValId String | ValCmd Cmd | ValLoc Loc | ValListLoc (List Loc) | ValEnv (SortedMap Val Loc) |ValNop
+data Bindable = BindLoc Loc | BindInt Int
+
+data Val = ValInt Int | ValBool Bool | ValId String | ValCmd Cmd | ValLoc Loc | ValListLoc (List Loc) | ValEnv (SortedMap Val Bindable) | ValBindable Bindable | ValNop
 
 
 implementation Eq Loc where
@@ -122,6 +124,10 @@ implementation Show Ctrl where
 
 implementation Show Loc where
   show (L a) = "L " ++ show a
+
+implementation Show Bindable where
+  show (BindLoc x) = show x
+  show (BindInt x) = show x
 
 implementation Show Val where
   show (ValInt a) = "ValInt " ++ show a
