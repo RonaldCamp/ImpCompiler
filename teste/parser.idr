@@ -1,73 +1,131 @@
 module parser
 
 import lexer
+import tipos
 
 %access public export
 
-data AExp = Sum AExp AExp | Sub AExp AExp | Div AExp AExp | Mul AExp AExp | N Int | Paren AExp
-
-implementation Show AExp where
-  show (Sum a b) = "Sum " ++ "(" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
-  show (Sub a b) = "Sub " ++ "(" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
-  show (Mul a b) = "Mul " ++ "(" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
-  show (Div a b) = "Div " ++ "(" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
-  show (N a) = "N " ++ show a
-  show (Paren a) = "(" ++ show a ++ ")"
-  -- show (ID a) = "ID " ++ show a
-
--- Corrige a precedencia das operações, precedencia a esquerda
-reduce : List AExp -> (AExp -> AExp -> AExp) -> AExp
-reduce [x] f = x
-reduce (x::y::xs) f = reduce ((f x y) :: xs) f
-
 mutual
 
-  num : List Token -> (AExp, List Token)
-  num ((TokenInt n)::l') = (N n, l')
+-- Parser de expressões aritmeticas
+  num : List Token -> (Maybe AExp, List Token)
+  num ((TokenInt n)::l) = (Just (N n), l)
+  num l = (Nothing, l)
 
-  factor : List Token -> (AExp, List Token)
-  factor ((TokenInt n)::xs) = num ((TokenInt n)::xs)
-  factor ((TokenLParen)::xs) = let (e,r) = arithExp xs in factorAux e r where
-    factorAux : AExp -> List Token -> (AExp, List Token)
-    factorAux e [] = (e,[])
-    factorAux e (TokenRParen :: ys) = ((Paren e),ys)
+  factor : List Token -> (Maybe AExp, List Token)
+  factor = orParser num parenExp
+  -- factor ((TokenInt n)::xs) = num ((TokenInt n)::xs)
+  -- factor l = (Nothing, l)
 
-  mul : List Token -> (AExp, List Token)
+  parenExp : List Token -> (Maybe AExp, List Token)
+  parenExp ((TokenLParen)::xs) = let (e,r) = arithExp xs in parenExpAux e r where
+    parenExpAux : Maybe AExp -> List Token -> (Maybe AExp, List Token)
+    parenExpAux Nothing r = (Nothing, (TokenLParen::r))
+    parenExpAux (Just e) (TokenRParen::xs) = ((Just e),xs)
+    parenExpAux (Just e) l = (Nothing,(TokenLParen::xs))
+  parenExp l = (Nothing, l)
+  --
+  mul : List Token -> (Maybe AExp, List Token)
   mul l = let (exp, r) = factor l in mulAux exp r where
-    mulAux : AExp -> List Token -> (AExp, List Token)
-    mulAux e [] = (e,[])
-    mulAux e ((TokenTimes)::xs) = let (exp', r2) = mul xs in (Mul e exp', r2)
-    mulAux e ((TokenDiv)::xs) = let (exp', r2) = mul xs in (reduce (divToList (Div e exp')) Div, r2)
-    mulAux e l = (e,l)
-
-
-  sum : List Token -> (AExp, List Token)
+    mulAux : Maybe AExp -> List Token -> (Maybe AExp, List Token)
+    mulAux Nothing r = (Nothing, r)
+    mulAux (Just e) ((TokenTimes)::xs) = let (exp', r2) = factor xs in case exp' of
+      Nothing => (Just e, (TokenTimes::xs))
+      Just k => mulAux (Just (Mul e k)) r2
+    mulAux (Just e) ((TokenDiv)::xs) = let (exp', r2) = factor xs in case exp' of
+      Nothing => (Just e, (TokenDiv::xs))
+      Just k => mulAux (Just (Div e k)) r2
+    mulAux (Just e) l = ((Just e),l)
+  --
+  sum : List Token -> (Maybe AExp, List Token)
   sum l = let (exp, r) = mul l in sumAux exp r where
-    sumAux : AExp -> List Token -> (AExp, List Token)
-    sumAux e [] = (e,[])
-    sumAux e ((TokenPlus)::xs) = let (exp', r2) = sum xs in (Sum e exp', r2)
-    sumAux e ((TokenMinus)::xs) = let (exp', r2) = sum xs in (reduce (subToList (Sub e exp')) Sub, r2)
-    sumAux e l = (e,l)
-
--- funções usadas para o transformar AExps em Listas
-  subToList : AExp -> List AExp
-  subToList (Sub a b) = (subToList a) ++ (subToList b)
-  subToList a = [a]
-
-  divToList : AExp -> List AExp
-  divToList (Div a b) = (divToList a) ++ (divToList b)
-  divToList a = [a]
-
-  arithExp : List Token -> (AExp, List Token)
+    sumAux : Maybe AExp -> List Token -> (Maybe AExp, List Token)
+    sumAux Nothing r = (Nothing, r)
+    sumAux (Just e) ((TokenPlus)::xs) = let (exp', r2) = mul xs in case exp' of
+      Nothing => (Just e, (TokenPlus::xs))
+      Just k => sumAux (Just (Sum e k)) r2
+    sumAux (Just e) ((TokenMinus)::xs) = let (exp', r2) = mul xs in case exp' of
+      Nothing => (Just e, (TokenMinus::xs))
+      Just k => sumAux (Just (Sub e k)) r2
+    sumAux (Just e) l = ((Just e),l)
+  --
+  arithExp : List Token -> (Maybe AExp, List Token)
   arithExp = sum
 
-removeParen : AExp -> AExp
-removeParen (Sum a b) = Sum (removeParen a) (removeParen b)
-removeParen (Sub a b) = Sub (removeParen a) (removeParen b)
-removeParen (Mul a b) = Mul (removeParen a) (removeParen b)
-removeParen (Div a b) = Div (removeParen a) (removeParen b)
-removeParen (Paren e) = removeParen e
-removeParen (N n) = N n
+-- Parser de expressões booleanas
+  bool : List Token -> (Maybe BExp, List Token)
+  bool (TokenTrue::xs) = (Just (Boo True), xs)
+  bool (TokenFalse::xs) = (Just (Boo False), xs)
+  bool l = (Nothing, l)
 
+  -- factorBExp : List Token -> (Maybe BExp, List Token)
+  -- factorBexp = orParser bool parenBExp
+
+  factorBExp : List Token -> (Maybe BExp, List Token)
+  factorBExp = orParser bool parenBExp
+
+  parenBExp : List Token -> (Maybe BExp, List Token)
+  parenBExp ((TokenLParen)::xs) = let (e,r) = boolExp xs in parenBExpAux e r where
+    parenBExpAux : Maybe BExp -> List Token -> (Maybe BExp, List Token)
+    parenBExpAux Nothing r = (Nothing, (TokenLParen::r))
+    parenBExpAux (Just e) (TokenRParen::xs) = ((Just e),xs)
+    parenBExpAux (Just e) l = (Nothing,(TokenLParen::xs))
+  parenBExp l = (Nothing, l)
+
+  conditExp : List Token -> (Maybe BExp, List Token)
+  conditExp = orParser aux factorBExp
+
+  aux : List Token -> (Maybe BExp, List Token)
+  aux l = let (e,r) = arithExp l in conditExpAux e r where
+    conditExpAux : Maybe AExp -> List Token -> (Maybe BExp, List Token)
+    conditExpAux Nothing r = (Nothing, r)
+    conditExpAux (Just e) ((TokenEqual)::xs) = let (exp', r2) = arithExp xs in case exp' of
+      Nothing => (Nothing, (TokenEqual::xs))
+      Just k => ((Just (Equal e k)), r2)
+    conditExpAux (Just e) ((TokenMaior)::xs) = let (exp', r2) = arithExp xs in case exp' of
+      Nothing => (Nothing, (TokenMaior::xs))
+      Just k => ((Just (GT e k)), r2)
+    conditExpAux (Just e) ((TokenMenor)::xs) = let (exp', r2) = arithExp xs in case exp' of
+      Nothing => (Nothing, (TokenMenor::xs))
+      Just k => ((Just (LT e k)), r2)
+    conditExpAux (Just e) ((TokenMaiorIgual)::xs) = let (exp', r2) = arithExp xs in case exp' of
+      Nothing => (Nothing, (TokenMaiorIgual::xs))
+      Just k => ((Just (GE e k)), r2)
+    conditExpAux (Just e) ((TokenMenorIgual)::xs) = let (exp', r2) = arithExp xs in case exp' of
+      Nothing => (Nothing, (TokenMenorIgual::xs))
+      Just k => ((Just (LE e k)), r2)
+    conditExpAux (Just e) l' = (Nothing,l)
+
+  logic : List Token -> (Maybe BExp, List Token)
+  logic l = let (exp, r) = conditExp l in logicAux exp r where
+    logicAux : Maybe BExp -> List Token -> (Maybe BExp, List Token)
+    logicAux Nothing r = (Nothing, r)
+    logicAux (Just e) ((TokenOr)::xs) = let (exp', r2) = conditExp xs in case exp' of
+      Nothing => (Just e, (TokenOr::xs))
+      Just k => logicAux (Just (OR e k)) r2
+    logicAux (Just e) ((TokenAnd)::xs) = let (exp', r2) = conditExp xs in case exp' of
+      Nothing => (Just e, (TokenAnd::xs))
+      Just k => logicAux (Just (And e k)) r2
+    logicAux (Just e) l = ((Just e),l)
+
+  boolExp : List Token -> (Maybe BExp, List Token)
+  boolExp = logic
+
+-- funçao para tentar parser de AExp e BExp
+-- tenta aplicar o parser1 a lista
+  orParser : (List Token -> (Maybe a, List Token)) -> (List Token -> (Maybe a, List Token)) -> (List Token -> (Maybe a, List Token))
+  orParser parser1 parser2 list = let (exp,r) = parser1 list in orParserAux exp r where
+-- orParserAux verifica se o parser1 falhou (Nothing) ou retornou com sucesso um (exp, resto da lista)
+    orParserAux : Maybe a -> List Token -> (Maybe a, List Token)
+    orParserAux Nothing l = parser2 l
+    orParserAux (Just exp') l = (Just exp', l)
+
+-- Ajustes para o piAutomata
 parse : (AExp, List Token) -> AExp
 parse (exp, l) = exp
+
+-- parseBExp : (BExp, List Token) -> BExp
+-- parseBExp (exp, l) = exp
+
+transformPi : AExp -> Ctrl
+transformPi exp = CtExp (AExpR exp)

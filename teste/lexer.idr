@@ -4,7 +4,7 @@ module lexer
 
 data Token = TokenVarId String
        | TokenAssign
-       | TokenEq
+       | TokenEqual
        | TokenPlus
        | TokenMinus
        | TokenTimes
@@ -49,7 +49,7 @@ implementation Eq Token where
   (==) (TokenMenor) (TokenMenor) = True
   (==) (TokenMaiorIgual) (TokenMaiorIgual) = True
   (==) (TokenMenorIgual) (TokenMenorIgual) = True
-  (==) (TokenEq) (TokenEq) = True
+  (==) (TokenEqual) (TokenEqual) = True
   (==) (TokenAnd) (TokenAnd) = True
   (==) (TokenOr) (TokenOr) = True
   (==) (TokenNot) (TokenNot) = True
@@ -83,7 +83,7 @@ implementation Show Token where
   show (TokenMenor) = "TokenMenor"
   show (TokenMaiorIgual) = "TokenMaiorIgual"
   show (TokenMenorIgual) = "TokenMenorIgual"
-  show (TokenEq) = "TokenEq"
+  show (TokenEqual) = "TokenEqual"
   show (TokenAnd) = "TokenAnd"
   show (TokenOr) = "TokenOr"
   show (TokenNot) = "TokenNot"
@@ -118,7 +118,7 @@ tokenizer ">" = TokenMaior
 tokenizer "<" = TokenMenor
 tokenizer ">=" = TokenMaiorIgual
 tokenizer "<=" = TokenMenorIgual
-tokenizer "==" = TokenEq
+tokenizer "==" = TokenEqual
 tokenizer "and" = TokenAnd
 tokenizer "or" = TokenOr
 tokenizer "not" = TokenNot
@@ -149,7 +149,7 @@ read_token ('+':: xs) v list = if v=="" then read_token xs v (TokenPlus :: list)
 read_token ('-':: xs) v list = if v=="" then read_token xs v (TokenMinus :: list) else read_token xs "" (TokenMinus :: (tokenizer v :: list))
 read_token ('*':: xs) v list = if v=="" then read_token xs v (TokenTimes :: list) else read_token xs "" (TokenTimes :: (tokenizer v :: list))
 read_token ('/':: xs) v list = if v=="" then read_token xs v (TokenDiv :: list) else read_token xs "" (TokenDiv :: (tokenizer v :: list))
-read_token ('='::'='::xs) v list = if v=="" then read_token xs v (TokenEq :: list) else read_token xs "" (TokenEq :: (tokenizer v :: list))
+read_token ('='::'='::xs) v list = if v=="" then read_token xs v (TokenEqual :: list) else read_token xs "" (TokenEqual :: (tokenizer v :: list))
 read_token ('>'::'='::xs) v list = if v=="" then read_token xs v (TokenMaiorIgual :: list) else read_token xs "" (TokenMaiorIgual :: (tokenizer v :: list))
 read_token ('<'::'='::xs) v list = if v=="" then read_token xs v (TokenMenorIgual :: list) else read_token xs "" (TokenMenorIgual :: (tokenizer v :: list))
 read_token ('>':: xs) v list = if v=="" then read_token xs v (TokenMaior :: list) else read_token xs "" (TokenMaior :: (tokenizer v :: list))
