@@ -74,6 +74,14 @@ mutual
 
   conditExp : List Token -> (Maybe BExp, List Token)
   conditExp = orParser aux factorBExp
+  -- conditExp (TokenLParen::xs) = let (exp, r) = factorBExp ((TokenLParen::xs)) in case exp of
+  --   Nothing => aux (TokenLParen::xs)
+  --   Just k => ((Just k), r)
+  --
+  -- conditExp l = let (exp, r) = aux l in case exp of
+  --   Nothing =>  factorBExp r
+  --   Just k => ((Just k), r)
+
 
   aux : List Token -> (Maybe BExp, List Token)
   aux l = let (e,r) = arithExp l in conditExpAux e r where
@@ -111,6 +119,20 @@ mutual
   boolExp : List Token -> (Maybe BExp, List Token)
   boolExp = logic
 
+  parseBExp : List Token -> (Maybe Exp, List Token)
+  parseBExp l = let (exp, r) = logic l in case exp of
+    Nothing => (Nothing, l)
+    Just k => ((Just (BExpR k)), r)
+
+  parseAExp : List Token -> (Maybe Exp, List Token)
+  parseAExp l = let (exp, r) = arithExp l in case exp of
+    Nothing => (Nothing, l)
+    Just k => ((Just (AExpR k)), r)
+
+  exp : List Token -> (Maybe Exp, List Token)
+  exp = orParser parseBExp parseAExp
+
+
 -- funçao para tentar parser de AExp e BExp
 -- tenta aplicar o parser1 a lista
   orParser : (List Token -> (Maybe a, List Token)) -> (List Token -> (Maybe a, List Token)) -> (List Token -> (Maybe a, List Token))
@@ -121,8 +143,8 @@ mutual
     orParserAux (Just exp') l = (Just exp', l)
 
 -- Ajustes para o piAutomata
-parse : (AExp, List Token) -> AExp
-parse (exp, l) = exp
+-- parse : (AExp, List Token) -> AExp
+-- parse (exp, l) = exp
 
 -- parseBExp : (BExp, List Token) -> BExp
 -- parseBExp (exp, l) = exp

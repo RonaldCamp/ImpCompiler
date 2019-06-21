@@ -31,12 +31,12 @@ data Bindable = BindLoc Loc | BindInt Int
 data Val = ValInt Int | ValBool Bool | ValId String | ValCmd Cmd | ValLoc Loc | ValListLoc (List Loc) | ValEnv (SortedMap Val Bindable) | ValBindable Bindable | ValNop
 
 
-implementation Eq Loc where
-  (L a) == (L b) = a == b
-  (L a) /= (L b) = a /= b
+-- implementation Eq Loc where
+--   (L a) == (L b) = a == b
+--   (L a) /= (L b) = a /= b
 
-implementation Ord Loc where
-  compare (L a) (L b) = compare a b
+-- implementation Ord Loc where
+--   compare (L a) (L b) = compare a b
 
 -- implementation Eq BExp where
 --   (Equal a b) == (Equal c d) = (a == c) && (b == d)
@@ -68,8 +68,8 @@ implementation Ord Loc where
 --   (NOP) == (NOP) = True
 
 
-implementation Eq Val where
-  (ValId a) == (ValId b) = a == b
+-- implementation Eq Val where
+--   (ValId a) == (ValId b) = a == b
   -- (ValBool a) == (ValBool b) = a == b
   -- (ValId a) == (ValId b) = a == b
   -- (ValCmd a) == (ValCmd b) = a == b
@@ -80,8 +80,8 @@ implementation Eq Val where
   -- (ValNop) == (ValNop) = True
 
 
-implementation Ord Val where
-  compare (ValId a) (ValId b) = compare a b
+-- implementation Ord Val where
+--   compare (ValId a) (ValId b) = compare a b
 
 implementation Show Id where
   show (ValID x) = "ValID " ++ show x
@@ -107,7 +107,7 @@ implementation Show BExp where
 
 implementation Show Exp where
   show (AExpR a) = "AExpR (" ++ show a ++ ")"
-  show (BExpR a) = "BExpR " ++ show a
+  show (BExpR a) = "BExpR (" ++ show a ++ ")"
   show (Ref a) = "Ref " ++ show a
   show (DeRef id) = "DeRef " ++ show id
   show (ValRef id) = "ValRef " ++ show id
