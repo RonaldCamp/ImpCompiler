@@ -19,7 +19,7 @@ calcAExp (Mul (N n1) (N n2)) = n1 * n2
 
 calcBExp : BExp -> Bool
 calcBExp (Not (Boo b)) = not b
-calcBExp (Eq (N n1) (N n2)) = n1 == n2
+calcBExp (Equal (N n1) (N n2)) = n1 == n2
 calcBExp (GE (N n1) (N n2)) = n1 >= n2
 calcBExp (LE (N n1) (N n2)) = n1 <= n2
 calcBExp (LT (N n1) (N n2)) = n1 < n2
@@ -60,11 +60,6 @@ addIntersectionNewEnv ( (key,value) :: e) env = addIntersectionNewEnv e (toList 
 deleteLocsStore: List Loc -> SortedMap Loc Val -> SortedMap Loc Val
 deleteLocsStore [] store = store
 deleteLocsStore (x :: xs) store = deleteLocsStore xs (delete x store)
-
-
-getValueFromBindable: Maybe Bindable -> Maybe Loc
-getValueFromBindable (Just (BindLoc loc)) = Just loc
-
 
 ---------------
 --process ( [CtExp (AExpR (Sum (N 1) (N 2) ) )],[], empty, empty, [])
@@ -123,7 +118,7 @@ process ( (CtExpOp CtrlDiv)::xs , (ValInt val1) :: (ValInt val2 :: restoLista), 
 
 -- Boolean Expression
 process ( (CtExp (BExpR (Not b))) ::xs , listVal, env, stored, listLoc) (list) = process ( (CtExp (BExpR b)) :: (CtExpOp CtrlNot :: xs) , listVal, env, stored, listLoc) (( (CtExp (BExpR (Not b))) ::xs , listVal, env, stored, listLoc)::list)
-process ( (CtExp (BExpR (Eq n1 n2))) ::xs , listVal, env, stored, listLoc) (list) = process ((CtExp (AExpR n1) :: (CtExp (AExpR n2) :: (CtExpOp CtrlEq :: xs)) ), listVal, env, stored, listLoc) (( (CtExp (BExpR (Eq n1 n2))) ::xs , listVal, env, stored, listLoc)::list)
+process ( (CtExp (BExpR (Equal n1 n2))) ::xs , listVal, env, stored, listLoc) (list) = process ((CtExp (AExpR n1) :: (CtExp (AExpR n2) :: (CtExpOp CtrlEq :: xs)) ), listVal, env, stored, listLoc) (( (CtExp (BExpR (Equal n1 n2))) ::xs , listVal, env, stored, listLoc)::list)
 process ( (CtExp (BExpR (GE n1 n2))) ::xs , listVal, env, stored, listLoc) (list) = process ((CtExp (AExpR n1) :: (CtExp (AExpR n2) :: (CtExpOp CtrlGE :: xs)) ), listVal, env, stored, listLoc) (( (CtExp (BExpR (GE n1 n2))) ::xs , listVal, env, stored, listLoc)::list)
 process ( (CtExp (BExpR (LE n1 n2))) ::xs , listVal, env, stored, listLoc) (list) = process ((CtExp (AExpR n1) :: (CtExp (AExpR n2) :: (CtExpOp CtrlLE :: xs)) ), listVal, env, stored, listLoc) (( (CtExp (BExpR (LE n1 n2))) ::xs , listVal, env, stored, listLoc)::list)
 process ( (CtExp (BExpR (LT n1 n2))) ::xs , listVal, env, stored, listLoc) (list) = process ((CtExp (AExpR n1) :: (CtExp (AExpR n2) :: (CtExpOp CtrlLT :: xs)) ), listVal, env, stored, listLoc) (( (CtExp (BExpR (LT n1 n2))) ::xs , listVal, env, stored, listLoc)::list)
@@ -132,7 +127,7 @@ process ( (CtExp (BExpR (And b1 b2))) ::xs , listVal, env, stored, listLoc) (lis
 process ( (CtExp (BExpR (OR b1 b2))) ::xs , listVal, env, stored, listLoc) (list) = process ((CtExp (BExpR b1) :: (CtExp (BExpR b2) :: (CtExpOp CtrlOR :: xs)) ), listVal, env, stored, listLoc) (( (CtExp (BExpR (OR b1 b2))) ::xs , listVal, env, stored, listLoc)::list)
 process ( (CtExp (BExpR (Boo b))) ::xs , listVal, env, stored, listLoc) (list) = process (xs , ValBool b :: listVal, env, stored, listLoc) (( (CtExp (BExpR (Boo b))) ::xs , listVal, env, stored, listLoc)::list)
 process ( (CtExpOp CtrlNot) :: xs , (ValBool b) :: restoLista, env, stored, listLoc) (list) = process (xs , ValBool (calcBExp (Not (Boo b))) :: restoLista , env, stored, listLoc) (( (CtExpOp CtrlNot) :: xs , (ValBool b) :: restoLista, env, stored, listLoc)::list)
-process ( (CtExpOp CtrlEq)::xs , (ValInt val1) :: (ValInt val2 :: restoLista), env, stored, listLoc) (list) = process (xs, (ValBool (calcBExp (Eq (N val2) (N val1)))) ::restoLista, env, stored, listLoc) (( (CtExpOp CtrlEq)::xs , (ValInt val1) :: (ValInt val2 :: restoLista), env, stored, listLoc)::list)
+process ( (CtExpOp CtrlEq)::xs , (ValInt val1) :: (ValInt val2 :: restoLista), env, stored, listLoc) (list) = process (xs, (ValBool (calcBExp (Equal (N val2) (N val1)))) ::restoLista, env, stored, listLoc) (( (CtExpOp CtrlEq)::xs , (ValInt val1) :: (ValInt val2 :: restoLista), env, stored, listLoc)::list)
 process ( (CtExpOp CtrlGE)::xs , (ValInt val1) :: (ValInt val2 :: restoLista), env, stored, listLoc) (list) = process (xs, (ValBool (calcBExp (GE (N val2) (N val1)))) ::restoLista, env, stored, listLoc) (( (CtExpOp CtrlGE)::xs , (ValInt val1) :: (ValInt val2 :: restoLista), env, stored, listLoc)::list)
 process ( (CtExpOp CtrlLE)::xs , (ValInt val1) :: (ValInt val2 :: restoLista), env, stored, listLoc) (list) = process (xs, (ValBool (calcBExp (LE (N val2) (N val1)))) ::restoLista, env, stored, listLoc) (( (CtExpOp CtrlLE)::xs , (ValInt val1) :: (ValInt val2 :: restoLista), env, stored, listLoc)::list)
 process ( (CtExpOp CtrlLT)::xs , (ValInt val1) :: (ValInt val2 :: restoLista), env, stored, listLoc) (list) = process (xs, (ValBool (calcBExp (LT (N val2) (N val1)))) ::restoLista, env, stored, listLoc) (( (CtExpOp CtrlLT)::xs , (ValInt val1) :: (ValInt val2 :: restoLista), env, stored, listLoc)::list)

@@ -8,7 +8,7 @@ data Id = ValID String
 
 data AExp = Sum AExp AExp | Sub AExp AExp | Div AExp AExp | Mul AExp AExp | N Int | ID Id
 
-data BExp = Eq AExp AExp | Not BExp | LT AExp AExp | GT AExp AExp | LE AExp AExp | GE AExp AExp | And BExp BExp | OR BExp BExp | Boo Bool
+data BExp = Equal AExp AExp | Not BExp | LT AExp AExp | GT AExp AExp | LE AExp AExp | GE AExp AExp | And BExp BExp | OR BExp BExp | Boo Bool
 
 data Exp = AExpR AExp | BExpR BExp | Ref Exp | DeRef Id | ValRef Id | Cns Exp
 
@@ -38,37 +38,75 @@ implementation Eq Loc where
 implementation Ord Loc where
   compare (L a) (L b) = compare a b
 
+-- implementation Eq BExp where
+--   (Equal a b) == (Equal c d) = (a == c) && (b == d)
+--   (LT a b) == (ValId c d) = (a == c) && (b == d)
+--   (ValId a b) == (ValId c d) = (a == c) && (b == d)
+--   (ValId a b) == (ValId c d) = (a == c) && (b == d)
+--   (ValId a b) == (ValId c d) = (a == c) && (b == d)
+--   (ValId a b) == (ValId c d) = (a == c) && (b == d)
+--   (ValId a b) == (ValId c d) = (a == c) && (b == d)
+--
+-- implementation Eq Exp where
+--   (AExpR a) == (AExpR b) = a == b
+--   (BExpR a) == (BExpR b) = a == b
+--   (Ref a) == (Ref b) = a == b
+--   (DeRef a) == (DeRef b) = a == b
+--   (ValRef a) == (ValRef b) = a == b
+--   (Cns a) == (Cns b) = a == b
+--
+-- implementation Eq Dec where
+--   (Bind a b) == (Bind c d) = (a == c) && (b == d)
+--   (DSeq a b) == (DSeq c d) = (a == c) && (b == d)
+--
+-- implementation Eq Cmd where
+--   (ValId a b) == (ValId c d) = (a == c) && (b == d)
+--   (Loop a b) == (Loop c d) = (a == c) && (b == d)
+--   (Cond a b c) == (Cond d e f) = (a == d) && (b == e) && (c == f)
+--   (CSeq a b) == (CSeq c d) = (a == c) && (b == d)
+--   (Blk a b) == (Blk c d) = (a == c) && (b == d)
+--   (NOP) == (NOP) = True
+
 
 implementation Eq Val where
-    (ValId a) == (ValId b) = a == b
+  (ValId a) == (ValId b) = a == b
+  -- (ValBool a) == (ValBool b) = a == b
+  -- (ValId a) == (ValId b) = a == b
+  -- (ValCmd a) == (ValCmd b) = a == b
+  -- (ValLoc a) == (ValLoc b) = a == b
+  -- (ValListLoc a) == (ValListLoc b) = a == b
+  -- (ValEnv a) == (ValEnv b) = a == b
+  -- (ValBindable a) == (ValBindable b) = a == b
+  -- (ValNop) == (ValNop) = True
+
 
 implementation Ord Val where
-    compare (ValId a) (ValId b) = compare a b
+  compare (ValId a) (ValId b) = compare a b
 
 implementation Show Id where
   show (ValID x) = "ValID " ++ show x
 
 implementation Show AExp where
-  show (Sum a b) = "Sum " ++ show a ++ " " ++ show b
-  show (Sub a b) = "Sub " ++ show a ++ " " ++ show b
-  show (Mul a b) = "Mul " ++ show a ++ " " ++ show b
-  show (Div a b) = "Div " ++ show a ++ " " ++ show b
+  show (Sum a b) = "Sum (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (Sub a b) = "Sub (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (Mul a b) = "Mul (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (Div a b) = "Div (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
   show (N a) = "N " ++ show a
   show (ID a) = "ID " ++ show a
 
 implementation Show BExp where
-  show (Eq a b) = "Eq " ++ show a ++ " " ++ show b
-  show (GT a b) = "GT " ++ show a ++ " " ++ show b
-  show (LT a b) = "LT " ++ show a ++ " " ++ show b
-  show (LE a b) = "LE " ++ show a ++ " " ++ show b
-  show (GE a b) = "GE " ++ show a ++ " " ++ show b
-  show (And a b) = "And " ++ show a ++ " " ++ show b
-  show (OR a b) = "OR " ++ show a ++ " " ++ show b
+  show (Equal a b) = "Equal (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (GT a b) = "GT (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (LT a b) = "LT (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (LE a b) = "LE (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (GE a b) = "GE (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (And a b) = "And (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (OR a b) = "OR (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
   show (Boo a) = "Boo " ++ show a
   show (Not a) = "Not " ++ show a
 
 implementation Show Exp where
-  show (AExpR a) = "AExpR " ++ show a
+  show (AExpR a) = "AExpR (" ++ show a ++ ")"
   show (BExpR a) = "BExpR " ++ show a
   show (Ref a) = "Ref " ++ show a
   show (DeRef id) = "DeRef " ++ show id
@@ -115,7 +153,7 @@ implementation Show DecOp where
   show CtrlDSeq = "CtrlDSeq"
 
 implementation Show Ctrl where
-  show (CtExp a) = "CtExp " ++ show a
+  show (CtExp a) = "CtExp (" ++ show a ++ ")"
   show (CtExpOp a) = "CtExpOp " ++ show a
   show (CtCmd a) = "CtCmd " ++ show a
   show (CtDec a) = "CtDec " ++ show a
