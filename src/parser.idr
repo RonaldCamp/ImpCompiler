@@ -14,8 +14,6 @@ mutual
 
   factor : List Token -> (Maybe AExp, List Token)
   factor = orParser num parenExp
-  -- factor ((TokenInt n)::xs) = num ((TokenInt n)::xs)
-  -- factor l = (Nothing, l)
 
   parenExp : List Token -> (Maybe AExp, List Token)
   parenExp ((TokenLParen)::xs) = let (e,r) = arithExp xs in parenExpAux e r where
@@ -24,7 +22,7 @@ mutual
     parenExpAux (Just e) (TokenRParen::xs) = ((Just e),xs)
     parenExpAux (Just e) l = (Nothing,(TokenLParen::xs))
   parenExp l = (Nothing, l)
-  --
+
   mul : List Token -> (Maybe AExp, List Token)
   mul l = let (exp, r) = factor l in mulAux exp r where
     mulAux : Maybe AExp -> List Token -> (Maybe AExp, List Token)
@@ -36,7 +34,7 @@ mutual
       Nothing => (Just e, (TokenDiv::xs))
       Just k => mulAux (Just (Div e k)) r2
     mulAux (Just e) l = ((Just e),l)
-  --
+
   sum : List Token -> (Maybe AExp, List Token)
   sum l = let (exp, r) = mul l in sumAux exp r where
     sumAux : Maybe AExp -> List Token -> (Maybe AExp, List Token)
@@ -48,7 +46,7 @@ mutual
       Nothing => (Just e, (TokenMinus::xs))
       Just k => sumAux (Just (Sub e k)) r2
     sumAux (Just e) l = ((Just e),l)
-  --
+
   arithExp : List Token -> (Maybe AExp, List Token)
   arithExp = sum
 
@@ -57,9 +55,6 @@ mutual
   bool (TokenTrue::xs) = (Just (Boo True), xs)
   bool (TokenFalse::xs) = (Just (Boo False), xs)
   bool l = (Nothing, l)
-
-  -- factorBExp : List Token -> (Maybe BExp, List Token)
-  -- factorBexp = orParser bool parenBExp
 
   factorBExp : List Token -> (Maybe BExp, List Token)
   factorBExp = orParser bool parenBExp
@@ -74,14 +69,6 @@ mutual
 
   conditExp : List Token -> (Maybe BExp, List Token)
   conditExp = orParser aux factorBExp
-  -- conditExp (TokenLParen::xs) = let (exp, r) = factorBExp ((TokenLParen::xs)) in case exp of
-  --   Nothing => aux (TokenLParen::xs)
-  --   Just k => ((Just k), r)
-  --
-  -- conditExp l = let (exp, r) = aux l in case exp of
-  --   Nothing =>  factorBExp r
-  --   Just k => ((Just k), r)
-
 
   aux : List Token -> (Maybe BExp, List Token)
   aux l = let (e,r) = arithExp l in conditExpAux e r where
@@ -143,11 +130,5 @@ mutual
     orParserAux (Just exp') l = (Just exp', l)
 
 -- Ajustes para o piAutomata
--- parse : (AExp, List Token) -> AExp
--- parse (exp, l) = exp
-
--- parseBExp : (BExp, List Token) -> BExp
--- parseBExp (exp, l) = exp
-
-transformPi : AExp -> Ctrl
-transformPi exp = CtExp (AExpR exp)
+transformPi : Exp -> Ctrl
+transformPi exp = (CtExp exp)
