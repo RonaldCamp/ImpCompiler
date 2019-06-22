@@ -28,86 +28,26 @@ data Loc = L Int
 
 data Bindable = BindLoc Loc | BindInt Int
 
-data Val = ValInt Int | ValBool Bool | ValId String | ValCmd Cmd | ValLoc Loc | ValListLoc (List Loc) | ValEnv (SortedMap Val Bindable) | ValBindable Bindable | ValNop
+data Val = ValInt Int | ValBool Bool | ValId String | ValCmd Cmd | ValLoc Loc | ValListLoc (List Loc) | ValEnv (SortedMap Id Bindable) | ValBindable Bindable | ValNop
 
 
--- implementation Eq Loc where
---   (L a) == (L b) = a == b
---   (L a) /= (L b) = a /= b
---
--- implementation Ord Loc where
---   compare (L a) (L b) = compare a b
+implementation Eq Loc where
+  (L a) == (L b) = a == b
+  (L a) /= (L b) = a /= b
+
+implementation Ord Loc where
+  compare (L a) (L b) = compare a b
 
 implementation Eq Id where
-  (ValID a) == (ValID b) = (a == b)
-  (ValID a) /= (ValID b) = (a /= b)
+  (ValID a) == (ValID b) = a == b
+  (ValID a) /= (ValID b) = a /= b
 
-implementation Eq AExp where
-  (Sum a b) == (Sum c d) = (a == c) && (b == d)
-  (Sub a b) == (Sub c d) = (a == c) && (b == d)
-  (Mul a b) == (Mul c d) = (a == c) && (b == d)
-  (Div a b) == (Div c d) = (a == c) && (b == d)
-  (N a) == (N b) = (a == b)
-  (ID a) == (ID b) = (a == b)
-
-  (Sum a b) /= (Sum c d) = (a /= c) || (b /= d)
-  (Sub a b) /= (Sub c d) = (a /= c) || (b /= d)
-  (Mul a b) /= (Mul c d) = (a /= c) || (b /= d)
-  (Div a b) /= (Div c d) = (a /= c) || (b /= d)
-  (N a) /= (N b) = (a /= b)
-  (ID a) /= (ID b) = (a /= b)
-
-
--- implementation Eq BExp where
---   (Boo a) == (Boo b) = (a == b)
---   (Equal a b) == (Equal c d) = (a == c) && (b == d)
---   (LT a b) == (LT c d) = (a == c) && (b == d)
---   (GT a b) == (GT c d) = (a == c) && (b == d)
---   (GE a b) == (GE c d) = (a == c) && (b == d)
---   (LE a b) == (LE c d) = (a == c) && (b == d)
---   (And a b) == (And c d) = (a == c) && (b == d)
---   (OR a b) == (OR c d) = (a == c) && (b == d)
---   (Not a) == (Not b) = (a == b)
---
---
--- implementation Eq Exp where
---   (AExpR a) == (AExpR b) = a == b
---   (BExpR a) == (BExpR b) = a == b
---   (Ref a) == (Ref b) = a == b
---   (DeRef a) == (DeRef b) = a == b
---   (ValRef a) == (ValRef b) = a == b
---   (Cns a) == (Cns b) = a == b
-
--- implementation Eq Dec where
---   (Bind a b) == (Bind c d) = (a == c) && (b == d)
---   (DSeq a b) == (DSeq c d) = (a == c) && (b == d)
-
--- implementation Eq Cmd where
---   (ValId a b) == (ValId c d) = (a == c) && (b == d)
---   (Loop a b) == (Loop c d) = (a == c) && (b == d)
---   (Cond a b c) == (Cond d e f) = (a == d) && (b == e) && (c == f)
---   (CSeq a b) == (CSeq c d) = (a == c) && (b == d)
---   (Blk a b) == (Blk c d) = (a == c) && (b == d)
---   (NOP) == (NOP) = True
---
---
--- implementation Eq Val where
---   (ValId a) == (ValId b) = a == b
---   (ValBool a) == (ValBool b) = a == b
---   (ValId a) == (ValId b) = a == b
---   (ValCmd a) == (ValCmd b) = a == b
---   (ValLoc a) == (ValLoc b) = a == b
---   (ValListLoc a) == (ValListLoc b) = a == b
---   (ValEnv a) == (ValEnv b) = a == b
---   (ValBindable a) == (ValBindable b) = a == b
---   (ValNop) == (ValNop) = True
-
-
--- implementation Ord Val where
---   compare (ValId a) (ValId b) = compare a b
+implementation Ord Id where
+  compare (ValID a) (ValID b) = compare a b
+  
 
 implementation Show Id where
-  show (ValID x) = "ValID (" ++ show x ++ ")"
+  show (ValID x) = "ValID " ++ show x
 
 implementation Show AExp where
   show (Sum a b) = "Sum (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
@@ -130,21 +70,21 @@ implementation Show BExp where
 
 implementation Show Exp where
   show (AExpR a) = "AExpR (" ++ show a ++ ")"
-  show (BExpR a) = "BExpR (" ++ show a ++ ")"
-  show (Ref a) = "Ref (" ++ show a ++ ")"
-  show (DeRef id) = "DeRef (" ++ show id ++ ")"
-  show (ValRef id) = "ValRef (" ++ show id ++ ")"
+  show (BExpR a) = "BExpR " ++ show a
+  show (Ref a) = "Ref " ++ show a
+  show (DeRef id) = "DeRef " ++ show id
+  show (ValRef id) = "ValRef " ++ show id
 
 implementation Show Dec where
-  show (Bind a b) = "Bind (" ++ show a ++ ")" ++ " (" ++ show b ++ ")"
-  show (DSeq a b) = "DSeq (" ++ show a ++ ")" ++ " (" ++ show b ++ ")"
+  show (Bind a b) = "Bind " ++ show a ++ " " ++ show b
+  show (DSeq a b) = "DSeq " ++ show a ++ " " ++ show b
 
 implementation Show Cmd where
-  show (Assign id exp) = "Assign (" ++ show id ++ ")" ++ " (" ++ show exp ++ ")"
-  show (Loop b c) = "Loop (" ++ show b ++ ")" ++ " (" ++ show c ++ ")"
-  show (Cond b c1 c2) = "Cond (" ++ show b ++ ")" ++ " (" ++ show c1 ++ ")" ++ " (" ++ show c2 ++ ")"
-  show (CSeq c1 c2) = "CSeq (" ++ show c1 ++ ")" ++ " (" ++ show c2 ++ ")"
-  show (Blk d c) = "Blk (" ++ show d ++ ")" ++ " (" ++ show c ++ ")"
+  show (Assign id exp) = "Assign " ++ show id ++ " " ++ show exp
+  show (Loop b c) = "Loop " ++ show b ++ " " ++ show c
+  show (Cond b c1 c2) = "Cond " ++ show b ++ " " ++ show c1 ++ " " ++ show c2
+  show (CSeq c1 c2) = "CSeq " ++ show c1 ++ " " ++ show c2
+  show (Blk d c) = "Blk " ++ show d ++ " " ++ show c
   show (NOP) = "NOP"
 
 implementation Show CmdOp where
@@ -177,11 +117,11 @@ implementation Show DecOp where
 
 implementation Show Ctrl where
   show (CtExp a) = "CtExp (" ++ show a ++ ")"
-  show (CtExpOp a) = "CtExpOp (" ++ show a ++ ")"
-  show (CtCmd a) = "CtCmd (" ++ show a ++ ")"
-  show (CtDec a) = "CtDec (" ++ show a ++ ")"
-  show (CtCmdOp a) = "CtCmdOp (" ++ show a ++ ")"
-  show (CtDecOp a) = "CtDecOp (" ++ show a ++ ")"
+  show (CtExpOp a) = "CtExpOp " ++ show a
+  show (CtCmd a) = "CtCmd " ++ show a
+  show (CtDec a) = "CtDec " ++ show a
+  show (CtCmdOp a) = "CtCmdOp " ++ show a
+  show (CtDecOp a) = "CtDecOp " ++ show a
 
 implementation Show Loc where
   show (L a) = "L " ++ show a
