@@ -87,8 +87,8 @@ deleteLocsStore (x :: xs) store = deleteLocsStore xs (delete x store)
 
 --[CtCmd (Blk (Bind (ValID "x") (Ref (AExpR (N 5)))) (Blk (Bind (ValID "y") (Ref (AExpR (N 3)))) (Loop (GT (ID (ValID "x")) (N 2)) (CSeq (Assign (ValID "y") (AExpR (Sum (ID (ValID "y")) (N 10)))) (Assign (ValID "x") (AExpR (Sub (ID (ValID "x")) (N 1)))))) ))]
 
-printPi: (List Ctrl, List Val, SortedMap Val Loc , SortedMap Loc Val, List Loc) -> String
-printPi (listCrtl, listaVal, env, sto, listLoc) = show listCrtl ++ show listaVal ++ show (toList env) ++ show (toList sto) ++ show listLoc
+printPi: (List Ctrl, List Val, SortedMap Id Bindable , SortedMap Loc Val, List Loc) -> String
+printPi (listCrtl, listaVal, env, sto, listLoc) = "Pilha de Controle: " ++ show listCrtl ++ "\n" ++ "Pilha de Valores: " ++ show listaVal ++ "\n" ++ "Enviroment: " ++ show (toList env) ++ "\n" ++ "Stored" ++ show (toList sto) ++ "\n" ++ "Lista de Locations: " ++ show listLoc ++ "\n"
 
 
 getLocFromValLoc: Val -> Loc
