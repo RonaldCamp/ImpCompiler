@@ -44,7 +44,7 @@ implementation Eq Id where
 
 implementation Ord Id where
   compare (ValID a) (ValID b) = compare a b
-  
+
 
 implementation Show Id where
   show (ValID x) = "ValID " ++ show x
@@ -66,25 +66,25 @@ implementation Show BExp where
   show (And a b) = "And (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
   show (OR a b) = "OR (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
   show (Boo a) = "Boo " ++ show a
-  show (Not a) = "Not " ++ show a
+  show (Not a) = "Not (" ++ show a ++ ")"
 
 implementation Show Exp where
   show (AExpR a) = "AExpR (" ++ show a ++ ")"
-  show (BExpR a) = "BExpR " ++ show a
-  show (Ref a) = "Ref " ++ show a
-  show (DeRef id) = "DeRef " ++ show id
-  show (ValRef id) = "ValRef " ++ show id
+  show (BExpR a) = "BExpR (" ++ show a ++ ")"
+  show (Ref a) = "Ref (" ++ show a ++ ")"
+  show (DeRef id) = "DeRef (" ++ show id ++ ")"
+  show (ValRef id) = "ValRef (" ++ show id ++ ")"
 
 implementation Show Dec where
-  show (Bind a b) = "Bind " ++ show a ++ " " ++ show b
-  show (DSeq a b) = "DSeq " ++ show a ++ " " ++ show b
+  show (Bind a b) = "Bind (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+  show (DSeq a b) = "DSeq (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
 
 implementation Show Cmd where
-  show (Assign id exp) = "Assign " ++ show id ++ " " ++ show exp
-  show (Loop b c) = "Loop " ++ show b ++ " " ++ show c
-  show (Cond b c1 c2) = "Cond " ++ show b ++ " " ++ show c1 ++ " " ++ show c2
-  show (CSeq c1 c2) = "CSeq " ++ show c1 ++ " " ++ show c2
-  show (Blk d c) = "Blk " ++ show d ++ " " ++ show c
+  show (Assign id exp) = "Assign (" ++ show id ++ ") " ++ "("++ show exp ++ ")"
+  show (Loop b c) = "Loop (" ++ show b ++ ") " ++ "("++ show c ++ ")"
+  show (Cond b c1 c2) = "Cond (" ++ show b ++ ") " ++ "("++ show c1 ++ ")" ++ " (" ++ show c2 ++ ")"
+  show (CSeq c1 c2) = "CSeq (" ++ show c1 ++ ") " ++ "("++ show c2 ++ ")"
+  show (Blk d c) = "Blk (" ++ show d ++ ") " ++ "("++ show c ++ ")"
   show (NOP) = "NOP"
 
 implementation Show CmdOp where
@@ -117,25 +117,25 @@ implementation Show DecOp where
 
 implementation Show Ctrl where
   show (CtExp a) = "CtExp (" ++ show a ++ ")"
-  show (CtExpOp a) = "CtExpOp " ++ show a
-  show (CtCmd a) = "CtCmd " ++ show a
+  show (CtExpOp a) = "CtExpOp (" ++ show a ++ ")"
+  show (CtCmd a) = "CtCmd (" ++ show a ++ ")"
   show (CtDec a) = "CtDec " ++ show a
-  show (CtCmdOp a) = "CtCmdOp " ++ show a
-  show (CtDecOp a) = "CtDecOp " ++ show a
+  show (CtCmdOp a) = "CtCmdOp (" ++ show a ++ ")"
+  show (CtDecOp a) = "CtDecOp (" ++ show a ++ ")"
 
 implementation Show Loc where
   show (L a) = "L " ++ show a
 
 implementation Show Bindable where
-  show (BindLoc x) = show x
-  show (BindInt x) = show x
+  show (BindLoc x) = "BindLoc (" ++ show x ++ ")"
+  show (BindInt x) = "BindInt (" ++ show x ++ ")"
 
 implementation Show Val where
-  show (ValInt a) = "ValInt " ++ show a
-  show (ValBool b) = "ValBool " ++ show b
-  show (ValId a) = "ValId " ++ show a
-  show (ValCmd a) = "ValCmd " ++ show a
-  show (ValLoc a) = "ValLoc " ++ show a
-  show (ValListLoc a) = "ValListLoc " ++ show a
-  show (ValEnv map) = "ValEnv" ++ show (toList map)
+  show (ValInt a) = "ValInt (" ++ show a ++ ")"
+  show (ValBool b) = "ValBool (" ++ show b ++ ")"
+  show (ValId a) = "ValId (" ++ show a ++ ")"
+  show (ValCmd a) = "ValCmd (" ++ show a ++ ")"
+  show (ValLoc a) = "ValLoc (" ++ show a ++ ")"
+  show (ValListLoc a) = "ValListLoc (" ++ show a ++ ")"
+  show (ValEnv map) = "ValEnv (" ++ show (toList map) ++ ")"
   show ValNop = "ValNop"
