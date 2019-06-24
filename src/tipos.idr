@@ -6,9 +6,9 @@ import Data.SortedMap
 
 data Id = ValID String
 
-data AExp = Sum AExp AExp | Sub AExp AExp | Div AExp AExp | Mul AExp AExp | N Int | ID Id
+data AExp = Sum AExp AExp | Sub AExp AExp | Div AExp AExp | Mul AExp AExp | N Int | IdA Id
 
-data BExp = Equal AExp AExp | Not BExp | LT AExp AExp | GT AExp AExp | LE AExp AExp | GE AExp AExp | And BExp BExp | OR BExp BExp | Boo Bool
+data BExp = Equal AExp AExp | Not BExp | LT AExp AExp | GT AExp AExp | LE AExp AExp | GE AExp AExp | And BExp BExp | OR BExp BExp | Boo Bool | IdB Id
 
 data Exp = AExpR AExp | BExpR BExp | Ref Exp | DeRef Id | ValRef Id | Cns Exp
 
@@ -55,7 +55,7 @@ implementation Show AExp where
   show (Mul a b) = "Mul (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
   show (Div a b) = "Div (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
   show (N a) = "N " ++ show a
-  show (ID a) = "ID " ++ show a
+  show (IdA a) = "IdA (" ++ show a ++ ")"
 
 implementation Show BExp where
   show (Equal a b) = "Equal (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
@@ -67,6 +67,7 @@ implementation Show BExp where
   show (OR a b) = "OR (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
   show (Boo a) = "Boo " ++ show a
   show (Not a) = "Not (" ++ show a ++ ")"
+  show (IdB a) = "IdB (" ++ show a ++ ")"
 
 implementation Show Exp where
   show (AExpR a) = "AExpR (" ++ show a ++ ")"

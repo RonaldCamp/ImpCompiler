@@ -7,9 +7,12 @@ import tipos
 
 mutual
 
--- Parser de expressões aritmeticas
+--------------------------------- Parser de Expressões Aritmeticas ---------------------------------
   num : List Token -> (Maybe AExp, List Token)
   num ((TokenInt n)::l) = (Just (N n), l)
+  num ((TokenVarId id)::xs) = let (exp, r) = parseId ((TokenVarId id)::xs) in case exp of
+    Nothing => (Nothing, r)
+    Just k => (Just (IdA k), xs)
   num l = (Nothing, l)
 
   factor : List Token -> (Maybe AExp, List Token)
@@ -50,14 +53,37 @@ mutual
   arithExp : List Token -> (Maybe AExp, List Token)
   arithExp = sum
 
--- Parser de expressões booleanas
+--------------------------------- Parser de Expressões Booleanas ---------------------------------
   bool : List Token -> (Maybe BExp, List Token)
   bool (TokenTrue::xs) = (Just (Boo True), xs)
   bool (TokenFalse::xs) = (Just (Boo False), xs)
   bool l = (Nothing, l)
 
+  idBExp : List Token -> (Maybe BExp, List Token)
+  idBExp ((TokenVarId id)::xs) = let (exp, r) = parseId ((TokenVarId id)::xs) in idAux exp r where
+    idAux : Maybe Id -> List Token -> (Maybe BExp, List Token)
+    idAux (Just e) (TokenOr::xs) = (Just (IdB e), (TokenOr::xs))
+    idAux (Just e) (TokenAnd::xs) = (Just (IdB e), (TokenAnd::xs))
+    idAux (Just e) l = (Nothing, l)
+
   factorBExp : List Token -> (Maybe BExp, List Token)
-  factorBExp = orParser bool parenBExp
+  factorBExp ((TokenVarId id)::xs) = idBExp ((TokenVarId id)::xs)
+  -- factorBExp (TokenNot::(TokenVarId id)::xs) = let (exp, r) = parseId ((TokenVarId id)::xs) in case exp of
+  --   Nothing => (Nothing, (TokenNot::(TokenVarId id)::xs))
+  --   Just k => (Just (Not (IdB k)), r)
+  factorBExp (TokenNot::xs) = let (exp, r) = conditExp xs in case exp of
+    Nothing => (Nothing, (TokenNot::xs))
+    Just k => (Just (Not k), r)
+  factorBExp l = orParser bool parenBExp l
+
+  teste : List Token -> (Maybe BExp, List Token)
+  teste ((TokenVarId id)::xs) = let (exp, r) = parseId ((TokenVarId id)::xs) in case exp of
+    Nothing => (Nothing, ((TokenVarId id)::xs))
+    Just k => (Just (IdB k), r)
+  teste (TokenNot::xs) = let (exp, r) = conditExp xs in case exp of
+    Nothing => (Nothing, (TokenNot::xs))
+    Just k => (Just (Not k), r)
+  teste l = orParser bool parenBExp l
 
   parenBExp : List Token -> (Maybe BExp, List Token)
   parenBExp ((TokenLParen)::xs) = let (e,r) = boolExp xs in parenBExpAux e r where
@@ -68,7 +94,7 @@ mutual
   parenBExp l = (Nothing, l)
 
   conditExp : List Token -> (Maybe BExp, List Token)
-  conditExp = orParser aux factorBExp
+  conditExp = orParser aux teste
 
   aux : List Token -> (Maybe BExp, List Token)
   aux l = let (e,r) = arithExp l in conditExpAux e r where
@@ -106,6 +132,7 @@ mutual
   boolExp : List Token -> (Maybe BExp, List Token)
   boolExp = logic
 
+--------------------------------- Ajustes para Exp ---------------------------------
   parseBExp : List Token -> (Maybe Exp, List Token)
   parseBExp l = let (exp, r) = logic l in case exp of
     Nothing => (Nothing, l)
@@ -116,9 +143,25 @@ mutual
     Nothing => (Nothing, l)
     Just k => ((Just (AExpR k)), r)
 
-  exp : List Token -> (Maybe Exp, List Token)
-  exp = orParser parseBExp parseAExp
+  parseExp : List Token -> (Maybe Exp, List Token)
+  parseExp = orParser parseBExp parseAExp
 
+--------------------------------- Parser de Comandos ---------------------------------
+  parseId : List Token -> (Maybe Id, List Token)
+  parseId ((TokenVarId id)::xs) = (Just (ValID id), xs)
+  parseId l = (Nothing, l)
+
+  assign : List Token -> (Maybe Cmd, List Token)
+  assign l = let (exp, r) = parseId l in assignAux exp r where
+    assignAux : Maybe Id -> List Token -> (Maybe Cmd, List Token)
+    assignAux Nothing r = (Nothing, r)
+    assignAux (Just e) (TokenAssign::xs) = let (exp', r2) = parseExp xs in case exp' of
+      Nothing => (Nothing, l)
+      Just k => ((Just (Assign e k)), r2)
+
+
+  comands : List Token -> (Maybe Cmd, List Token)
+  comands = assign
 
 -- funçao para tentar parser de AExp e BExp
 -- tenta aplicar o parser1 a lista
