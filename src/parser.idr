@@ -62,28 +62,18 @@ mutual
   idBExp : List Token -> (Maybe BExp, List Token)
   idBExp ((TokenVarId id)::xs) = let (exp, r) = parseId ((TokenVarId id)::xs) in idAux exp r where
     idAux : Maybe Id -> List Token -> (Maybe BExp, List Token)
-    idAux (Just e) (TokenOr::xs) = (Just (IdB e), (TokenOr::xs))
-    idAux (Just e) (TokenAnd::xs) = (Just (IdB e), (TokenAnd::xs))
-    idAux (Just e) l = (Nothing, l)
+    idAux (Just e) (TokenPlus::xs) = (Nothing, (TokenPlus::xs))
+    idAux (Just e) (TokenMinus::xs) = (Nothing, (TokenMinus::xs))
+    idAux (Just e) (TokenTimes::xs) = (Nothing, (TokenTimes::xs))
+    idAux (Just e) (TokenDiv::xs) = (Nothing, (TokenDiv::xs))
+    idAux (Just e) l = (Just (IdB e), l)
 
   factorBExp : List Token -> (Maybe BExp, List Token)
   factorBExp ((TokenVarId id)::xs) = idBExp ((TokenVarId id)::xs)
-  -- factorBExp (TokenNot::(TokenVarId id)::xs) = let (exp, r) = parseId ((TokenVarId id)::xs) in case exp of
-  --   Nothing => (Nothing, (TokenNot::(TokenVarId id)::xs))
-  --   Just k => (Just (Not (IdB k)), r)
   factorBExp (TokenNot::xs) = let (exp, r) = conditExp xs in case exp of
     Nothing => (Nothing, (TokenNot::xs))
     Just k => (Just (Not k), r)
   factorBExp l = orParser bool parenBExp l
-
-  teste : List Token -> (Maybe BExp, List Token)
-  teste ((TokenVarId id)::xs) = let (exp, r) = parseId ((TokenVarId id)::xs) in case exp of
-    Nothing => (Nothing, ((TokenVarId id)::xs))
-    Just k => (Just (IdB k), r)
-  teste (TokenNot::xs) = let (exp, r) = conditExp xs in case exp of
-    Nothing => (Nothing, (TokenNot::xs))
-    Just k => (Just (Not k), r)
-  teste l = orParser bool parenBExp l
 
   parenBExp : List Token -> (Maybe BExp, List Token)
   parenBExp ((TokenLParen)::xs) = let (e,r) = boolExp xs in parenBExpAux e r where
@@ -94,7 +84,7 @@ mutual
   parenBExp l = (Nothing, l)
 
   conditExp : List Token -> (Maybe BExp, List Token)
-  conditExp = orParser aux teste
+  conditExp = orParser aux factorBExp
 
   aux : List Token -> (Maybe BExp, List Token)
   aux l = let (e,r) = arithExp l in conditExpAux e r where
