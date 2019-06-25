@@ -148,10 +148,42 @@ mutual
     assignAux (Just e) (TokenAssign::xs) = let (exp', r2) = parseExp xs in case exp' of
       Nothing => (Nothing, l)
       Just k => ((Just (Assign e k)), r2)
+    assignAux (Just e) l = (Nothing, l)
 
+  loop : List Token -> (Maybe Cmd, List Token)
+  loop (TokenWhile::xs) = let (exp, r) = boolExp xs in loopAux exp r where
+    loopAux : Maybe BExp -> List Token -> (Maybe Cmd, List Token)
+    loopAux Nothing l = (Nothing, (TokenWhile::xs))
+    loopAux (Just e) (TokenDo::xs) = let (exp', r2) = bloc xs in case exp' of
+      Nothing => (Nothing, (TokenDo::xs))
+      Just k => (Just (Loop e k), r2)
+    loopAux (Just e) l = (Nothing, l)
+  loop l = (Nothing, l)
+
+  partials : List Token -> (Maybe Cmd, List Token)
+  partials (TokenElse::xs) = bloc xs
+  partials l = (Nothing, l)
+
+  blocAux : List Token -> (Maybe Cmd, List Token)
+  blocAux = orParser assign loop
+
+  bloc : List Token -> (Maybe Cmd, List Token)
+  bloc = orParser cond blocAux
+
+  cond : List Token -> (Maybe Cmd, List Token)
+  cond (TokenIf::xs) = let (exp, r) = boolExp xs in condAux exp r where
+    condAux : Maybe BExp -> List Token -> (Maybe Cmd, List Token)
+    condAux Nothing l = (Nothing, (TokenIf::xs))
+    condAux (Just e) (TokenThen::xs) = let (c1, r2) = bloc xs in case c1 of
+      Nothing => (Nothing, (TokenThen::xs))
+      Just k => let (c2, r3) = partials r2 in case c2 of
+        Nothing => (Just (Cond e k NOP), r3)
+        Just p => (Just (Cond e k p), r3)
+    condAux (Just e) l = (Nothing, l)
+  cond l = (Nothing, l)
 
   comands : List Token -> (Maybe Cmd, List Token)
-  comands = assign
+  comands = bloc
 
 -- funçao para tentar parser de AExp e BExp
 -- tenta aplicar o parser1 a lista

@@ -21,7 +21,7 @@ main = repl "Enter a program: " read_input
     read_input : String -> String
     -- read_input x = let e = removeJust(exp (read_token (unpack x) "" [])) in
     --   let (resp, list) = process ([CtExp e], [], empty, empty, []) [] in show (map printPi list)
-    -- read_input x = show (comands (read_token (unpack x) "" [])) ++ "\n"
-    read_input x = show (parseExp (read_token (unpack x) "" [])) ++ "\n"
+    read_input x = show (comands (read_token (unpack x) "" [])) ++ "\n"
+    -- read_input x = show (parseExp (read_token (unpack x) "" [])) ++ "\n"
     -- read_input x = let e = removeJust(exp (read_token (unpack x) "" [])) in show e ++ "\n"
     -- read_input x = let e = removeJust(exp (read_token (unpack x) "" [])) in (printPi ([CtExp e], [], empty, empty, [])) ++ "\n"
