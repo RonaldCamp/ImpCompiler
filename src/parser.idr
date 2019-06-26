@@ -164,11 +164,11 @@ mutual
   partials (TokenElse::xs) = seq xs
   partials l = (Nothing, l)
 
-  blocAux : List Token -> (Maybe Cmd, List Token)
-  blocAux = orParser assign loop
+  comandUnityAux : List Token -> (Maybe Cmd, List Token)
+  comandUnityAux = orParser assign loop
 
-  bloc : List Token -> (Maybe Cmd, List Token)
-  bloc = orParser cond blocAux
+  comandUnity : List Token -> (Maybe Cmd, List Token)
+  comandUnity = orParser cond comandUnityAux
 
   cond : List Token -> (Maybe Cmd, List Token)
   cond (TokenIf::xs) = let (exp, r) = boolExp xs in condAux exp r where
@@ -183,7 +183,7 @@ mutual
   cond l = (Nothing, l)
 
   seq : List Token -> (Maybe Cmd, List Token)
-  seq l = let (exp, r) = bloc l in seqAux exp r where
+  seq l = let (exp, r) = comandUnity l in seqAux exp r where
     seqAux : Maybe Cmd -> List Token -> (Maybe Cmd, List Token)
     seqAux Nothing l' = (Nothing, l')
     seqAux (Just e) l' = let (c2, r2) = seq l' in case c2 of
@@ -192,6 +192,40 @@ mutual
 
   comands : List Token -> (Maybe Cmd, List Token)
   comands = seq
+
+  declaration :List Token -> (Maybe Dec, List Token)
+  declaration (TokenCons::xs) = const (TokenCons::xs)
+  declaration (TokenVar::xs) = let (exp, r) = parseId xs in declarationAux exp r where
+    declarationAux : Maybe Id -> List Token -> (Maybe Dec, List Token)
+    declarationAux Nothing l' = (Nothing, l')
+    declarationAux (Just e) (TokenAssign::l') = let (exp', r2) = parseExp l' in case exp' of
+      Nothing => (Nothing, l')
+      Just k => (Just (Bind e (Ref k)), r2)
+    declarationAux (Just e) l' = (Nothing, l')
+  declaration l = (Nothing, l)
+
+  const :List Token -> (Maybe Dec, List Token)
+  const (TokenCons::xs) = let (exp, r) = parseId xs in constAux exp r where
+    constAux : Maybe Id -> List Token -> (Maybe Dec, List Token)
+    constAux Nothing l' = (Nothing, l')
+    constAux (Just e) (TokenAssign::l') = let (exp', r2) = parseExp l' in case exp' of
+      Nothing => (Nothing, l')
+      Just k => (Just (Bind e k), r2)
+    constAux (Just e) l' = (Nothing, l')
+  const l = (Nothing, l)
+
+  bloc : List Token -> (Maybe Cmd, List Token)
+  bloc (TokenLet::xs) = let (exp, r) = declaration xs in case exp of
+    Nothing => (Nothing, xs)
+    Just e => let (c1, r2) = comands r in case c1 of
+      Nothing => (Nothing, r)
+      Just k => (Just (Blk e k), r2)
+  bloc l = (Nothing, l)
+
+  ctrlParser : List Token -> (Maybe Ctrl, List Token)
+  ctrlParser l = let (exp, r) = bloc l in case exp of
+    Nothing => (Nothing, l)
+    Just k => ((Just (CtCmd k)), r)
 
 -- funçao para tentar parser de AExp e BExp
 -- tenta aplicar o parser1 a lista

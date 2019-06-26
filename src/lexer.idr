@@ -29,44 +29,10 @@ data Token = TokenVarId String
        | TokenLet
        | TokenIn
        | TokenVar
+       | TokenCons
        | TokenLBrace
        | TokenRBrace
        | TokenNop
-
-
-implementation Eq Token where
-  (==) (TokenInt n) (TokenInt m) = n==m
-  (==) (TokenNop) (TokenNop) = True
-  (==) (TokenPlus) (TokenPlus) = True
-  (==) (TokenMinus) (TokenMinus) = True
-  (==) (TokenTimes) (TokenTimes) = True
-  (==) (TokenDiv) (TokenDiv) = True
-  (==) (TokenLParen) (TokenLParen) = True
-  (==) (TokenRParen) (TokenRParen) = True
-  (==) (TokenTrue) (TokenTrue) = True
-  (==) (TokenFalse) (TokenFalse) = True
-  (==) (TokenMaior) (TokenMaior) = True
-  (==) (TokenMenor) (TokenMenor) = True
-  (==) (TokenMaiorIgual) (TokenMaiorIgual) = True
-  (==) (TokenMenorIgual) (TokenMenorIgual) = True
-  (==) (TokenEqual) (TokenEqual) = True
-  (==) (TokenAnd) (TokenAnd) = True
-  (==) (TokenOr) (TokenOr) = True
-  (==) (TokenNot) (TokenNot) = True
-  (==) (TokenVarId id) (TokenVarId id') = id == id'
-  (==) (TokenLBrace) (TokenLBrace) = True
-  (==) (TokenRBrace) (TokenRBrace) = True
-  (==) (TokenAssign) (TokenAssign) = True
-  (==) (TokenIf) (TokenIf) = True
-  (==) (TokenThen) (TokenThen) = True
-  (==) (TokenElse) (TokenElse) = True
-  (==) (TokenWhile) (TokenWhile) = True
-  (==) (TokenDo) (TokenDo) = True
-  (==) (TokenLet) (TokenLet) = True
-  (==) (TokenIn) (TokenIn) = True
-  (==) (TokenVar) (TokenVar) = True
-  (==) _ _ = False
-
 
 implementation Show Token where
   show (TokenInt n) = "TokenInt " ++ show n
@@ -99,6 +65,7 @@ implementation Show Token where
   show (TokenLet) = "TokenLet"
   show (TokenIn) = "TokenIn"
   show (TokenVar) = "TokenVar"
+  show (TokenCons) = "TokenCons"
 
 
 isVarId : List Char -> Bool
@@ -133,6 +100,7 @@ tokenizer "else" = TokenElse
 tokenizer "let" = TokenLet
 tokenizer "in" = TokenIn
 tokenizer "var" = TokenVar
+tokenizer "cons" = TokenCons
 tokenizer "while" = TokenWhile
 tokenizer "do" = TokenDo
 tokenizer str = case all isDigit (unpack str) of

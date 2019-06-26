@@ -76,6 +76,14 @@ deleteLocsStore (x :: xs) store = deleteLocsStore xs (delete x store)
 --      y := y+10
 --      x := x-1
 
+-- process ( [CtCmd (Blk (Bind (ValID "x") (Ref (BExpR (Boo True)))) (Blk (Bind (ValID "y") (Ref (AExpR (N 3)))) (Loop (IdB (ValID "x"))  (CSeq (Assign (ValID "y") (AExpR (Sub (IdA (ValID "y")) (N 1)))) (Assign (ValID "x") (BExpR (Boo True)))))) )],[], empty, empty, []) []
+-- let var x:=True in
+--   let var y:=10 in
+--     while x do
+--      if y<8 then
+-- 	      x:=False
+--      y:=y-1
+
 -- process ([CtCmd (Blk (Bind (ValID "x") (Ref (AExpR (N 5)))) (Assign (ValID "x") (AExpR (Sum (N 1) (IdA (ValID "x"))))))], [], empty, empty, []) []
 -- let var x := 5 in
 --   x:= 1+x
@@ -146,6 +154,12 @@ process ( (CtExp (AExpR (IdA (ValID c1)) )) ::xs , listVal, env, stored, listLoc
   Nothing => process ([], listVal, env, stored, listLoc) (list)
   Just (BindLoc l) => process (xs, (lookup' (Just (BindLoc l)) (stored))::listVal, env, stored, listLoc) (( (CtExp (AExpR (IdA (ValID c1)) )) ::xs , listVal, env, stored, listLoc)::list)
   Just (BindInt k) => process (xs, (ValInt k)::listVal, env, stored, listLoc) (( (CtExp (AExpR (IdA (ValID c1)) )) ::xs , listVal, env, stored, listLoc)::list)
+
+process ( (CtExp (BExpR (IdB (ValID c1)) )) ::xs , listVal, env, stored, listLoc) (list) = let loc = lookup (ValID c1) env in case loc of
+  Nothing => process ([], listVal, env, stored, listLoc) (list)
+  Just (BindLoc l) => process (xs, (lookup' (Just (BindLoc l)) (stored))::listVal, env, stored, listLoc) (( (CtExp (BExpR (IdB (ValID c1)) )) ::xs , listVal, env, stored, listLoc)::list)
+  Just (BindInt k) => process (xs, (ValInt k)::listVal, env, stored, listLoc) (( (CtExp (BExpR (IdB (ValID c1)) )) ::xs , listVal, env, stored, listLoc)::list)
+
 process ( (CtCmd (Loop b c)) ::xs , listVal, env, stored, listLoc) (list) = process (CtExp (BExpR b) ::(CtCmdOp CtrlLoop::xs), ValCmd (Loop b c)::listVal, env, stored, listLoc) (( (CtCmd (Loop b c)) ::xs , listVal, env, stored, listLoc)::list)
 process ( (CtCmd (Cond b c1 c2)) ::xs , listVal, env, stored, listLoc) (list) = process (CtExp (BExpR b) ::(CtCmdOp CtrlCond::xs), ValCmd (Cond b c1 c2)::listVal, env, stored, listLoc) (( (CtCmd (Cond b c1 c2)) ::xs , listVal, env, stored, listLoc)::list)
 process ( (CtCmd (CSeq c1 c2)) ::xs , listVal, env, stored, listLoc) (list) = process (CtCmd c1::(CtCmd c2::xs), listVal, env, stored, listLoc) (( (CtCmd (CSeq c1 c2)) ::xs , listVal, env, stored, listLoc)::list)
