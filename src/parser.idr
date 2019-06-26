@@ -154,14 +154,14 @@ mutual
   loop (TokenWhile::xs) = let (exp, r) = boolExp xs in loopAux exp r where
     loopAux : Maybe BExp -> List Token -> (Maybe Cmd, List Token)
     loopAux Nothing l = (Nothing, (TokenWhile::xs))
-    loopAux (Just e) (TokenDo::xs) = let (exp', r2) = bloc xs in case exp' of
+    loopAux (Just e) (TokenDo::xs) = let (exp', r2) = seq xs in case exp' of
       Nothing => (Nothing, (TokenDo::xs))
       Just k => (Just (Loop e k), r2)
     loopAux (Just e) l = (Nothing, l)
   loop l = (Nothing, l)
 
   partials : List Token -> (Maybe Cmd, List Token)
-  partials (TokenElse::xs) = bloc xs
+  partials (TokenElse::xs) = seq xs
   partials l = (Nothing, l)
 
   blocAux : List Token -> (Maybe Cmd, List Token)
@@ -174,7 +174,7 @@ mutual
   cond (TokenIf::xs) = let (exp, r) = boolExp xs in condAux exp r where
     condAux : Maybe BExp -> List Token -> (Maybe Cmd, List Token)
     condAux Nothing l = (Nothing, (TokenIf::xs))
-    condAux (Just e) (TokenThen::xs) = let (c1, r2) = bloc xs in case c1 of
+    condAux (Just e) (TokenThen::xs) = let (c1, r2) = seq xs in case c1 of
       Nothing => (Nothing, (TokenThen::xs))
       Just k => let (c2, r3) = partials r2 in case c2 of
         Nothing => (Just (Cond e k NOP), r3)
@@ -182,8 +182,16 @@ mutual
     condAux (Just e) l = (Nothing, l)
   cond l = (Nothing, l)
 
+  seq : List Token -> (Maybe Cmd, List Token)
+  seq l = let (exp, r) = bloc l in seqAux exp r where
+    seqAux : Maybe Cmd -> List Token -> (Maybe Cmd, List Token)
+    seqAux Nothing l' = (Nothing, l')
+    seqAux (Just e) l' = let (c2, r2) = seq l' in case c2 of
+      Nothing => ((Just e), l')
+      Just k => (Just (CSeq e k), r2)
+
   comands : List Token -> (Maybe Cmd, List Token)
-  comands = bloc
+  comands = seq
 
 -- funçao para tentar parser de AExp e BExp
 -- tenta aplicar o parser1 a lista
