@@ -111,6 +111,7 @@ tokenizer str = case all isDigit (unpack str) of
 read_token: List Char -> String -> List Token -> List Token
 read_token [] v list = if v == "" then reverse list else reverse (tokenizer v ::list)
 read_token (' ' :: xs) v list = if v=="" then read_token xs v list else read_token xs "" (tokenizer v :: list)
+read_token ('i'::'n' :: xs) v list = if v=="" then read_token xs v list else read_token xs "" (tokenizer v :: list)
 read_token ('(':: xs) v list = if v=="" then read_token xs v (TokenLParen :: list) else read_token xs "" (TokenLParen :: (tokenizer v :: list))
 read_token (')':: xs) v list = if v=="" then read_token xs v (TokenRParen :: list) else read_token xs "" (TokenRParen :: (tokenizer v :: list))
 read_token ('+':: xs) v list = if v=="" then read_token xs v (TokenPlus :: list) else read_token xs "" (TokenPlus :: (tokenizer v :: list))

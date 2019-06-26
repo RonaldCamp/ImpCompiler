@@ -164,8 +164,11 @@ mutual
   partials (TokenElse::xs) = seq xs
   partials l = (Nothing, l)
 
+  auxComand : List Token -> (Maybe Cmd, List Token)
+  auxComand = orParser loop bloc
+
   comandUnityAux : List Token -> (Maybe Cmd, List Token)
-  comandUnityAux = orParser assign loop
+  comandUnityAux = orParser assign auxComand
 
   comandUnity : List Token -> (Maybe Cmd, List Token)
   comandUnity = orParser cond comandUnityAux
@@ -215,12 +218,20 @@ mutual
   const l = (Nothing, l)
 
   bloc : List Token -> (Maybe Cmd, List Token)
-  bloc (TokenLet::xs) = let (exp, r) = declaration xs in case exp of
+  bloc (TokenLet::xs) = let (exp, r) = seqDec xs in case exp of
     Nothing => (Nothing, xs)
     Just e => let (c1, r2) = comands r in case c1 of
       Nothing => (Nothing, r)
       Just k => (Just (Blk e k), r2)
   bloc l = (Nothing, l)
+
+  seqDec : List Token -> (Maybe Dec, List Token)
+  seqDec l = let (exp, r) = declaration l in seqDecAux exp r where
+    seqDecAux : Maybe Dec -> List Token -> (Maybe Dec, List Token)
+    seqDecAux Nothing l' = (Nothing, l')
+    seqDecAux (Just e) l' = let (c2, r2) = seqDec l' in case c2 of
+      Nothing => ((Just e), l')
+      Just k => (Just (DSeq e k), r2)
 
   ctrlParser : List Token -> (Maybe Ctrl, List Token)
   ctrlParser l = let (exp, r) = bloc l in case exp of

@@ -115,7 +115,7 @@ inserir Nothing v stored = stored
 process: (List Ctrl, List Val, SortedMap Id Bindable , SortedMap Loc Val, List Loc) -> List (List Ctrl, List Val, SortedMap Id Bindable , SortedMap Loc Val, List Loc) -> ((List Ctrl, List Val, SortedMap Id Bindable , SortedMap Loc Val, List Loc), List (List Ctrl, List Val, SortedMap Id Bindable , SortedMap Loc Val, List Loc))
 
 -- Stop Case
-process ([],[], env, stored, listLoc) list = (([],[], env, stored, listLoc), list)
+process ([],[], env, stored, listLoc) list = (([],[], env, stored, listLoc), ([],[], env, stored, listLoc)::list)
 
 -- Aritmetic Expression
 process ( (CtExp (AExpR (Sum n1 n2))) ::xs , listVal, env, stored, listLoc) (list) = process ((CtExp (AExpR n1) :: (CtExp (AExpR n2) :: (CtExpOp CtrlSum :: xs)) ), listVal, env, stored, listLoc) (( (CtExp (AExpR (Sum n1 n2))) ::xs , listVal, env, stored, listLoc)::list)
