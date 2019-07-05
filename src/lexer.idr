@@ -30,8 +30,8 @@ data Token = TokenVarId String
        | TokenIn
        | TokenVar
        | TokenCons
-       | TokenLBrace
-       | TokenRBrace
+       | TokenEnd
+       | TokenCommercialE
        | TokenNop
 
 implementation Show Token where
@@ -54,8 +54,6 @@ implementation Show Token where
   show (TokenOr) = "TokenOr"
   show (TokenNot) = "TokenNot"
   show (TokenVarId id) = "TokenVarId " ++ show id
-  show (TokenLBrace) = "TokenLBrace"
-  show (TokenRBrace) = "TokenRBrace"
   show (TokenAssign) = "TokenAssign"
   show (TokenIf) = "TokenIf"
   show (TokenThen) = "TokenThen"
@@ -66,6 +64,8 @@ implementation Show Token where
   show (TokenIn) = "TokenIn"
   show (TokenVar) = "TokenVar"
   show (TokenCons) = "TokenCons"
+  show (TokenEnd) = "TokenEnd"
+  show (TokenCommercialE) = "TokenCommercialE"
 
 
 isVarId : List Char -> Bool
@@ -92,8 +92,6 @@ tokenizer "not" = TokenNot
 tokenizer "True" = TokenTrue
 tokenizer "False" = TokenFalse
 tokenizer ":=" = TokenAssign
-tokenizer "{" = TokenLBrace
-tokenizer "}" = TokenRBrace
 tokenizer "if" = TokenIf
 tokenizer "then" = TokenThen
 tokenizer "else" = TokenElse
@@ -103,6 +101,8 @@ tokenizer "var" = TokenVar
 tokenizer "cons" = TokenCons
 tokenizer "while" = TokenWhile
 tokenizer "do" = TokenDo
+tokenizer "end" = TokenEnd
+tokenizer "&" = TokenCommercialE
 tokenizer str = case all isDigit (unpack str) of
   True => TokenInt (cast str)
   False => if isVarId (unpack str) then TokenVarId str else TokenNop
@@ -125,6 +125,5 @@ read_token ('<'::'='::xs) v list = if v=="" then read_token xs v (TokenMenorIgua
 read_token ('>':: xs) v list = if v=="" then read_token xs v (TokenMaior :: list) else read_token xs "" (TokenMaior :: (tokenizer v :: list))
 read_token ('<':: xs) v list = if v=="" then read_token xs v (TokenMenor :: list) else read_token xs "" (TokenMenor :: (tokenizer v :: list))
 read_token (':'::'='::xs) v list = if v=="" then read_token xs v (TokenAssign :: list) else read_token xs "" (TokenAssign :: (tokenizer v :: list))
-read_token ('{':: xs) v list = if v=="" then read_token xs v (TokenLBrace :: list) else read_token xs "" (TokenLBrace :: (tokenizer v :: list))
-read_token ('}':: xs) v list = if v=="" then read_token xs v (TokenRBrace :: list) else read_token xs "" (TokenRBrace :: (tokenizer v :: list))
+read_token ('&':: xs) v list = if v=="" then read_token xs v (TokenCommercialE :: list) else read_token xs "" (TokenCommercialE:: (tokenizer v :: list))
 read_token (x :: xs) v list = read_token xs ( v ++ (singleton x)) list

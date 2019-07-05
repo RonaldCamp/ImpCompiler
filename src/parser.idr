@@ -134,7 +134,13 @@ mutual
     Just k => ((Just (AExpR k)), r)
 
   parseExp : List Token -> (Maybe Exp, List Token)
-  parseExp = orParser parseBExp parseAExp
+  parseExp (TokenCommercialE::l') = let (exp', r2) = parseId l' in case exp' of
+    Nothing => (Nothing, l')
+    Just k => (Just (DeRef k), r2)
+  parseExp (TokenTimes::l') = let (exp', r2) = parseId l' in case exp' of
+    Nothing => (Nothing, l')
+    Just k => (Just(ValRef k), r2)
+  parseExp l = orParser parseBExp parseAExp l
 
 --------------------------------- Parser de Comandos ---------------------------------
   parseId : List Token -> (Maybe Id, List Token)
@@ -189,6 +195,7 @@ mutual
   seq l = let (exp, r) = comandUnity l in seqAux exp r where
     seqAux : Maybe Cmd -> List Token -> (Maybe Cmd, List Token)
     seqAux Nothing l' = (Nothing, l')
+    seqAux (Just e) (TokenEnd::xs) = ((Just e), xs)
     seqAux (Just e) l' = let (c2, r2) = seq l' in case c2 of
       Nothing => ((Just e), l')
       Just k => (Just (CSeq e k), r2)
