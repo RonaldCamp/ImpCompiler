@@ -48,6 +48,8 @@ getLocPlus1FromMap map = L ((maxList (keys map)) + 1)
 extendStored: SortedMap Loc Val -> Val -> SortedMap Loc Val
 extendStored map v = insert (getLocPlus1FromMap map) (v) map
 
+getLocFromValBindable: Bindable -> Val
+getLocFromValBindable (BindLoc x) = ValLoc x
 
 -- Atualiza segundo ambiente com os valores do primeiro, e cria novas chave-valor caso nao exista
 -- ex: addIntersectionNewEnv ([ (ValId "k", L 3) , (ValId "y", L 4) , (ValId "z", L 5)]) ([ (ValId "x", L 1) , (ValId "y", L 2) , (ValId "z", L 3)])
@@ -70,19 +72,26 @@ deleteLocsStore (x :: xs) store = deleteLocsStore xs (delete x store)
 
 ------------------------ Casos de Teste -------------------------------------------------------------
 --process ( [CtCmd (Blk (Bind (ValID "x") (Ref (AExpR (N 5)))) (Blk (Bind (ValID "y") (Ref (AExpR (N 3)))) (Loop (GT (IdA (ValID "x")) (N 2)) (CSeq (Assign (ValID "y") (AExpR (Sum (IdA (ValID "y")) (N 10)))) (Assign (ValID "x") (AExpR (Sub (IdA (ValID "x")) (N 1)))))) ))],[], empty, empty, []) []
--- let var x = 5 in
---  let var y = 3 in
+-- let var x := 5 in
+--  let var y := 3 in
 --    while x>2
 --      y := y+10
 --      x := x-1
+-------------------------------------------------------------------------------
 
--- process ( [CtCmd (Blk (Bind (ValID "x") (Ref (BExpR (Boo True)))) (Blk (Bind (ValID "y") (Ref (AExpR (N 3)))) (Loop (IdB (ValID "x"))  (CSeq (Assign (ValID "y") (AExpR (Sub (IdA (ValID "y")) (N 1)))) (Assign (ValID "x") (BExpR (Boo True)))))) )],[], empty, empty, []) []
+-- let var x:=5 in let var y:=&x
+
+-- process ([CtCmd (Blk (Bind (ValID "x") (Ref (AExpR (N 5)))) (Blk (Bind (ValID "y") (Ref (DeRef (ValID "x")))) (Assign (ValID "x") (AExpR (Sum (IdA (ValID "x")) (N 10)))) ))], [], empty, empty,[]) []
+
+---------------------------------------------------------------------------
+
+-- process ( [CtCmd (Blk (Bind (ValID "x") (Ref (BExpR (Boo True)))) (Blk (Bind (ValID "y") (Ref (AExpR (N 3)))) (Loop (IdB (ValID "x"))  (CSeq (Assign (ValID "y") (AExpR (Sub (IdA (ValID "y")) (N 1)))) (Assign (ValID "x") (BExpR (Boo False)))))) )],[], empty, empty, []) []
 -- let var x:=True in
 --   let var y:=10 in
 --     while x do
 --      if y<8 then
--- 	      x:=False
---      y:=y-1
+-- 	      x:=False else
+--        y:=y-1
 
 -- process ([CtCmd (Blk (Bind (ValID "x") (Ref (AExpR (N 5)))) (Assign (ValID "x") (AExpR (Sum (N 1) (IdA (ValID "x"))))))], [], empty, empty, []) []
 -- let var x := 5 in
@@ -174,7 +183,7 @@ process ( (CtCmdOp CtrlCond :: xs , ValBool False :: (ValCmd (Cond b2 c1 c2) :: 
 process ( CtExp (Ref exp) :: xs , listVal, env, stored, listLoc) (list) = process (CtExp exp ::(CtExpOp CtrlRef::xs), listVal, env, stored, listLoc) (( CtExp (Ref exp) :: xs , listVal, env, stored, listLoc)::list)
 process ( CtCmd (Blk d c) :: xs , listVal, env, stored, listLoc) (list) = process ( CtDec d :: (CtCmdOp CtrlBlkDec :: (CtCmd c :: (CtCmdOp CtrlBlkCmd::xs))), ValListLoc listLoc :: listVal, env, stored, []) (( CtCmd (Blk d c) :: xs , listVal, env, stored, listLoc)::list)
 process ( CtDec (Bind (ValID x) exp) :: xs , listVal, env, stored, listLoc) (list) = process ( CtExp exp :: (CtDecOp CtrlBind::xs), ValId x ::listVal, env, stored, listLoc) (( CtDec (Bind (ValID x) exp) :: xs , listVal, env, stored, listLoc)::list)
-process ( CtExp (DeRef (ValID x)) :: xs , listVal, env, stored, listLoc) (list) = process ( xs, (ValBindable (transforma (lookup (ValID x) env)))::listVal, env, stored, listLoc) (( CtExp (DeRef (ValID x)) :: xs , listVal, env, stored, listLoc)::list)
+process ( CtExp (DeRef (ValID x)) :: xs , listVal, env, stored, listLoc) (list) = process ( xs, ( getLocFromValBindable (transforma (lookup (ValID x) env)))::listVal, env, stored, listLoc) (( CtExp (DeRef (ValID x)) :: xs , listVal, env, stored, listLoc)::list)
 process ( CtExp (ValRef (ValID x)) :: xs , listVal, env, stored, listLoc) (list) = process ( xs, (lookup' (Just (BindLoc (getLocFromValLoc (lookup' (lookup (ValID x) env) stored))) ) stored)::listVal, env, stored, listLoc) (( CtExp (ValRef (ValID x)) :: xs , listVal, env, stored, listLoc)::list)
 process ( CtDec (DSeq a b) :: xs , listVal, env, stored, listLoc) (list) = process (CtDec a :: (CtDec b :: xs), listVal, env, stored, listLoc) (( CtDec (DSeq a b) :: xs , listVal, env, stored, listLoc)::list)
 
