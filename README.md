@@ -11,40 +11,24 @@ make all
 ```
 
 ## Execução
-Para execução do piAutomata deve rodar os seguintes comandos:
+Para execução da aplicação deve rodar os seguintes comandos:
 ```
 cd src
-idris -p contrib piAutomata.idr
-```
-
-E chamar a função process com os programas desejados, escritos em πIR. Um exemplo é o seguinte programa:
-```
-x = 5
-y = 3
-while x>2
-  y = y+10
-  x = x-1
-  ```
-
-Para testá-lo deve chamar a função process da seguinte forma:
-```
-process ( [CtCmd (CSeq (Assign (ValID "x") (AExpR (N 5))) (CSeq (Assign (ValID"y") (AExpR (N 3))) (Loop (GT (ID (ValID "x")) (N 2)) (CSeq (Assign (ValID "y") (AExpR (Sum (ID (ValID "y")) (N 10)))) (Assign (ValID "x") (AExpR (Sub (ID (ValID "x")) (N 1))))))))],[],fromList [ (ValId "x", L 1) , (ValId "y", L 2) , (ValId "z", L 3)], empty, [])
-```
-
-Para encerrar a execução :q
-
-### Parser
-Por enquanto, o parser não está concluído, só temos o lexer pronto.
-
-Para executa-lo deve rodar os seguintes comandos:
-
-```
-cd teste
-idris main.idr
+idris -p contrib main.idr
 :exec
 ```
 
-Ao fazer isso será pedido para inserir o programa, um exemplo é: x:= (2+3)* 5
+Ao fazer isso será pedido para inserir o programa, um exemplo é: let var x:= 5 in let var y:=3 in while x>2 do y:=y+10, x:=x-1
+
+No momento, não é possível lidar com quebra de linha
+
+```
+let var x := 5 in
+  let var y := 3 in
+    while x>2 do
+      y := y+10
+      x := x-1
+```
 
 Para encerrar a leitura Ctrl+C
 
