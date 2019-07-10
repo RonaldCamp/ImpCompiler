@@ -12,9 +12,15 @@ data BExp = Equal AExp AExp | Not BExp | LT AExp AExp | GT AExp AExp | LE AExp A
 
 data Exp = AExpR AExp | BExpR BExp | Ref Exp | DeRef Id | ValRef Id | Cns Exp
 
-data Dec = Bind Id Exp | DSeq Dec Dec
+data Formals = Form (List Id)
 
-data Cmd = Assign Id Exp | Loop BExp Cmd | Cond BExp Cmd Cmd | CSeq Cmd Cmd | Blk Dec Cmd | NOP
+data Actuals = Act (List Exp)
+
+data Abs = Abs Formals Cmd
+
+data Dec = Bind Id Exp | DSeq Dec Dec | BindF Id Abs
+
+data Cmd = Assign Id Exp | Loop BExp Cmd | Cond BExp Cmd Cmd | CSeq Cmd Cmd | Blk Dec Cmd | Call Id Actuals | NOP
 
 data CmdOp = CtrlAssign | CtrlLoop | CtrlCond | CtrlCSeq | CtrlBlkDec | CtrlBlkCmd
 

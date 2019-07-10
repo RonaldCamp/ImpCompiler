@@ -32,6 +32,8 @@ data Token = TokenVarId String
        | TokenCons
        | TokenEnd
        | TokenCommercialE
+       | TokenFn
+       | TokenRec
        | TokenNop
 
 implementation Show Token where
@@ -66,6 +68,8 @@ implementation Show Token where
   show (TokenCons) = "TokenCons"
   show (TokenEnd) = "TokenEnd"
   show (TokenCommercialE) = "TokenCommercialE"
+  show (TokenFn) = "TokenFn"
+  show (TokenRec) = "TokenRec"
 
 
 isVarId : List Char -> Bool
@@ -103,6 +107,8 @@ tokenizer "while" = TokenWhile
 tokenizer "do" = TokenDo
 tokenizer "end" = TokenEnd
 tokenizer "&" = TokenCommercialE
+tokenizer "fn" = TokenFn
+tokenizer "rec" = TokenRec
 tokenizer str = case all isDigit (unpack str) of
   True => TokenInt (cast str)
   False => if isVarId (unpack str) then TokenVarId str else TokenNop
