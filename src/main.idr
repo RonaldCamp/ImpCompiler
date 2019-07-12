@@ -11,7 +11,7 @@ verificaList [] = True
 verificaList l = False
 
 printPi: (List Ctrl, List Val, SortedMap Id Bindable , SortedMap Loc Val, List Loc) -> String
-printPi (c, v, e, s, l) = "Pilha de Controle: " ++ show c ++ "\n" ++ "Pilha de Valores: " ++ show v ++ "\n" ++ "Enviroment: " ++ show (toList e) ++ "\n" ++ "Stored: " ++ show (toList s) ++ "\n" ++ "Lista de Locations: " ++ show l ++ "\n \n##############################################################\n \n"
+printPi (c, v, e, s, l) = "\n##############################################################\n\nPilha de Controle: " ++ show c ++ "\n" ++ "Pilha de Valores: " ++ show v ++ "\n" ++ "Enviroment: " ++ show (toList e) ++ "\n" ++ "Stored: " ++ show (toList s) ++ "\n" ++ "Lista de Locations: " ++ show l ++ "\n"
 
 main : IO ()
 main = repl "Enter a program: " read_input
