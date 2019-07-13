@@ -92,8 +92,8 @@ match (Form []) (val::vals) e = empty
 match (Form (id::ids)) [] e = empty
 match (Form []) [] e = e
 match (Form (id::ids)) (val::vals) e = case val of
-  ValInt x => let env = insert id (ValBindable (BindInt x)) e in match (Form ids) (vals) env
-  ValLoc l => let env = insert id (ValBindable (BindLoc l)) e in match (Form ids) (vals) env
+  ValInt x => let env = insert id (BindInt x) e in match (Form ids) (vals) env
+  ValLoc l => let env = insert id (BindLoc l) e in match (Form ids) (vals) env
 
 lookup': Maybe Bindable -> SortedMap Loc Val -> Val
 lookup' (Just (BindLoc loc)) sto =  transforma (lookup loc sto)
@@ -186,4 +186,4 @@ process ( CtAbs (Abstr f c) :: xs , listVal, env, stored, listLoc) (list) = proc
 process ( CtCmd (Call id (Act listExp)) :: xs , listVal, env, stored, listLoc) (list) = process ((pushExpsInCtrl (Act listExp) ((CtCmdOp (CtrlCall id (Prelude.List.length listExp)))::xs)), listVal, env, stored, listLoc) (( CtCmd (Call id (Act listExp)) :: xs , listVal, env, stored, listLoc)::list)
 
 
-process ( CtCmdOp (CtrlCall id tam)::xs , listVal, env, stored, listLoc) (list) = process ((getCmdFromClosure id env)::((CtCmdOp CtrlBlkCmd)::xs), ValEnv env :: listVal, addIntersectionNewEnv (match (getFormalsFromClosure id env) (getExpsFromListVal (listVal) (tam) ([]) ) ) (addIntersectionNewEnv ((getEnvFromClosure id env)) (env) ) , stored, listLoc) (( CtCmdOp (CtrlCall id tam)::xs , listVal, env, stored, listLoc)::list)
+-- process ( CtCmdOp (CtrlCall id tam)::xs , listVal, env, stored, listLoc) (list) = process ((getCmdFromClosure id env)::((CtCmdOp CtrlBlkCmd)::xs), ValEnv env :: listVal, addIntersectionNewEnv (match (getFormalsFromClosure id env) (getExpsFromListVal (listVal) (tam) ([]) ) ) (addIntersectionNewEnv ((getEnvFromClosure id env)) (env) ) , stored, listLoc) (( CtCmdOp (CtrlCall id tam)::xs , listVal, env, stored, listLoc)::list)

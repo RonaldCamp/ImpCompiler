@@ -21,13 +21,13 @@ mutual
 
   data Abst = Abstr Formals Cmd
 
-  data Dec = Bind Id Exp | DSeq Dec Dec | BindF Id Abst
+  data Dec = Bind Id Exp | DSeq Dec Dec | BindF Id Abst | Rbnd Id Abst
 
   data CmdOp = CtrlAssign | CtrlLoop | CtrlCond | CtrlCSeq | CtrlBlkDec | CtrlBlkCmd | CtrlCall Id Nat
 
   data ExpOp = CtrlSum | CtrlSub | CtrlDiv | CtrlMul | CtrlNot | CtrlLT | CtrlGT | CtrlLE | CtrlGE | CtrlAnd | CtrlOR | CtrlEq | CtrlRef | CtrlCns
 
-  data DecOp = CtrlBind | CtrlDSeq | CtrlBindF
+  data DecOp = CtrlBind | CtrlDSeq | CtrlBindF | CtrlRbnd
 
   data Ctrl = CtExp Exp | CtExpOp ExpOp | CtCmd Cmd | CtDec Dec | CtCmdOp CmdOp | CtDecOp DecOp | CtAbs Abst
 
@@ -97,6 +97,7 @@ mutual
     show (Bind a b) = "Bind (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
     show (DSeq a b) = "DSeq (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
     show (BindF a b) = "BindF (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
+    show (Rbnd a b) = "Rbnd (" ++ show a ++ ") " ++ "(" ++ show b ++ ")"
 
   implementation Show Cmd where
     show (Assign id exp) = "Assign (" ++ show id ++ ") " ++ "("++ show exp ++ ")"
@@ -139,6 +140,7 @@ mutual
     show CtrlBind = "CtrlBind"
     show CtrlDSeq = "CtrlDSeq"
     show CtrlBindF = "CtrlBindF"
+    show CtrlRbnd = "CtrlRbnd"
 
   implementation Show Ctrl where
     show (CtExp a) = "CtExp (" ++ show a ++ ")"

@@ -22,4 +22,3 @@ main = repl "Enter a program: " read_input
       Just k => if (verificaList l) then let (resp, list) = process ([k], [], empty, empty, []) []
          in unwords(map printPi list) else "Parser Error! \n" ++ show l ++ "\n"
     -- read_input x = show (ctrlParser (read_token (unpack x) "" [])) ++ "\n"
-    --read_input str = let (resp, list) = (process ([CtCmd (Blk (Bind (ValID "x") (Ref (AExpR (N 5)))) (Blk (Bind (ValID "y") (Ref (DeRef (ValID "x")))) (Assign (ValID "x") (AExpR (Sum (IdA (ValID "x")) (N 10)))) ))], [], empty, empty,[]) []) in unwords(map printPi list)

@@ -34,6 +34,7 @@ data Token = TokenVarId String
        | TokenCommercialE
        | TokenFn
        | TokenRec
+       | TokenIgual
        | TokenNop
 
 implementation Show Token where
@@ -70,6 +71,7 @@ implementation Show Token where
   show (TokenCommercialE) = "TokenCommercialE"
   show (TokenFn) = "TokenFn"
   show (TokenRec) = "TokenRec"
+  show (TokenIgual) = "TokenIgual"
 
 
 isVarId : List Char -> Bool
@@ -109,6 +111,7 @@ tokenizer "end" = TokenEnd
 tokenizer "&" = TokenCommercialE
 tokenizer "fn" = TokenFn
 tokenizer "rec" = TokenRec
+tokenizer "=" = TokenIgual
 tokenizer str = case all isDigit (unpack str) of
   True => TokenInt (cast str)
   False => if isVarId (unpack str) then TokenVarId str else TokenNop
@@ -118,7 +121,7 @@ read_token: List Char -> String -> List Token -> List Token
 read_token [] v list = if v == "" then reverse list else reverse (tokenizer v ::list)
 read_token (' ' :: xs) v list = if v=="" then read_token xs v list else read_token xs "" (tokenizer v :: list)
 read_token (',' :: xs) v list = if v=="" then read_token xs v list else read_token xs "" (tokenizer v :: list)
-read_token ('i'::'n' :: xs) v list = if v=="" then read_token xs v list else read_token xs "" (tokenizer v :: list)
+-- read_token ('i'::'n' :: xs) v list = if v=="" then read_token xs v list else read_token xs "" (tokenizer v :: list)
 read_token ('(':: xs) v list = if v=="" then read_token xs v (TokenLParen :: list) else read_token xs "" (TokenLParen :: (tokenizer v :: list))
 read_token (')':: xs) v list = if v=="" then read_token xs v (TokenRParen :: list) else read_token xs "" (TokenRParen :: (tokenizer v :: list))
 read_token ('+':: xs) v list = if v=="" then read_token xs v (TokenPlus :: list) else read_token xs "" (TokenPlus :: (tokenizer v :: list))
@@ -132,4 +135,5 @@ read_token ('>':: xs) v list = if v=="" then read_token xs v (TokenMaior :: list
 read_token ('<':: xs) v list = if v=="" then read_token xs v (TokenMenor :: list) else read_token xs "" (TokenMenor :: (tokenizer v :: list))
 read_token (':'::'='::xs) v list = if v=="" then read_token xs v (TokenAssign :: list) else read_token xs "" (TokenAssign :: (tokenizer v :: list))
 read_token ('&':: xs) v list = if v=="" then read_token xs v (TokenCommercialE :: list) else read_token xs "" (TokenCommercialE:: (tokenizer v :: list))
+read_token ('=':: xs) v list = if v=="" then read_token xs v (TokenIgual :: list) else read_token xs "" (TokenIgual:: (tokenizer v :: list))
 read_token (x :: xs) v list = read_token xs ( v ++ (singleton x)) list
