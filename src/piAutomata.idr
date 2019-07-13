@@ -91,7 +91,9 @@ match: Formals -> List Val -> SortedMap Id Bindable -> SortedMap Id Bindable
 match (Form []) (val::vals) e = empty
 match (Form (id::ids)) [] e = empty
 match (Form []) [] e = e
-match (Form (id::ids)) (val::vals) e = let env = insert id (ValBindable val) e in match (Form ids) (vals) env
+match (Form (id::ids)) (val::vals) e = case val of
+  ValInt x => let env = insert id (ValBindable (BindInt x)) e in match (Form ids) (vals) env
+  ValLoc l => let env = insert id (ValBindable (BindLoc l)) e in match (Form ids) (vals) env
 
 lookup': Maybe Bindable -> SortedMap Loc Val -> Val
 lookup' (Just (BindLoc loc)) sto =  transforma (lookup loc sto)
