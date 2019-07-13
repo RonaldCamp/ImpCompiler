@@ -240,9 +240,9 @@ mutual
       Nothing => ((Just e), l')
       Just k => (Just (DSeq e k), r2)
 
-  -- formals : List Token -> (Maybe Cmd, List Token)
-  -- formals = let (exp, r) = parseId
-  -- 
+  -- formals : List Token -> (Maybe Formals, List Token)
+  -- formals = let (id, r) = parseId in formalsAux id r 
+  --
   -- listaParam : List Token -> (Maybe Cmd, List Token)
   -- listaParam (TokenLParen::xs) = let (exp, r) = formals xs in listaParamAux exp r where
   --   listaParamAux : Maybe Id -> List Token -> (Maybe ID, List Token)

@@ -23,7 +23,7 @@ mutual
 
   data Dec = Bind Id Exp | DSeq Dec Dec | BindF Id Abst
 
-  data CmdOp = CtrlAssign | CtrlLoop | CtrlCond | CtrlCSeq | CtrlBlkDec | CtrlBlkCmd | CtrlCall Id
+  data CmdOp = CtrlAssign | CtrlLoop | CtrlCond | CtrlCSeq | CtrlBlkDec | CtrlBlkCmd | CtrlCall Id Nat
 
   data ExpOp = CtrlSum | CtrlSub | CtrlDiv | CtrlMul | CtrlNot | CtrlLT | CtrlGT | CtrlLE | CtrlGE | CtrlAnd | CtrlOR | CtrlEq | CtrlRef | CtrlCns
 
@@ -117,7 +117,7 @@ mutual
     show CtrlCSeq = "CtrlCSeq"
     show CtrlBlkDec = "CtrlBlkDec"
     show CtrlBlkCmd = "CtrlBlkCmd"
-    show (CtrlCall id) = "CtrlCall (" ++ show id ++ ")"
+    show (CtrlCall id tam) = "CtrlCall (" ++ show id ++ ") " ++ "(" ++ show tam ++ ")"
 
   implementation Show ExpOp where
     show CtrlSum = "CtrlSum"

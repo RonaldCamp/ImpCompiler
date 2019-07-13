@@ -1,0 +1,46 @@
+
+----------------SortedMaps---------------------------------
+--fromList [ (ValId "x", L 1) , (ValId "y", L 2) , (ValId "z", L 3)]
+
+--fromList [ (L 1, ValId "x") , (L 2, ValId "y") , (L 3, ValId "z") ]
+
+-- [L 1, L 2, L 6, L 3]
+
+------------------------ Casos de Teste -------------------------------------------------------------
+--process ( [CtCmd (Blk (Bind (ValID "x") (Ref (AExpR (N 5)))) (Blk (Bind (ValID "y") (Ref (AExpR (N 3)))) (Loop (GT (IdA (ValID "x")) (N 2)) (CSeq (Assign (ValID "y") (AExpR (Sum (IdA (ValID "y")) (N 10)))) (Assign (ValID "x") (AExpR (Sub (IdA (ValID "x")) (N 1)))))) ))],[], empty, empty, []) []
+-- let var x := 5 in
+--  let var y := 3 in
+--    while x>2
+--      y := y+10
+--      x := x-1
+-------------------------------------------------------------------------------
+
+-- let var x:=5 in let var y:=&x
+
+-- process ([CtCmd (Blk (Bind (ValID "x") (Ref (AExpR (N 5)))) (Blk (Bind (ValID "y") (Ref (DeRef (ValID "x")))) (Assign (ValID "x") (AExpR (Sum (IdA (ValID "x")) (N 10)))) ))], [], empty, empty,[]) []
+
+---------------------------------------------------------------------------
+
+-- process ( [CtCmd (Blk (Bind (ValID "x") (Ref (BExpR (Boo True)))) (Blk (Bind (ValID "y") (Ref (AExpR (N 3)))) (Loop (IdB (ValID "x"))  (CSeq (Assign (ValID "y") (AExpR (Sub (IdA (ValID "y")) (N 1)))) (Assign (ValID "x") (BExpR (Boo False)))))) )],[], empty, empty, []) []
+-- let var x:=True in
+--   let var y:=10 in
+--     while x do
+--      if y<8 then
+-- 	      x:=False else
+--        y:=y-1
+
+-- process ([CtCmd (Blk (Bind (ValID "x") (Ref (AExpR (N 5)))) (Assign (ValID "x") (AExpR (Sum (N 1) (IdA (ValID "x"))))))], [], empty, empty, []) []
+-- let var x := 5 in
+--   x:= 1+x
+
+-- process ([CtCmd (Blk (DSeq (Bind (ValID "x")  (AExpR (N 5))) (Bind (ValID "y")  (Ref (AExpR (N 0))))) (Assign (ValID "y") (AExpR (Sum (N 1) (ID (ValID "x"))))))], [], empty, empty, []) []
+-- let cons x := 5, var y:=0 in
+--   y:= 1+x
+--------------------------------------------------------------------------------------
+
+--[CtCmd (Blk (Bind (ValID "x") (Ref (AExpR (N 5)))) (Blk (Bind (ValID "y") (Ref (AExpR (N 3)))) (Loop (GT (IdA (ValID "x")) (N 2)) (CSeq (Assign (ValID "y") (AExpR (Sum (IdA (ValID "y")) (N 10)))) (Assign (ValID "x") (AExpR (Sub (IdA (ValID "x")) (N 1)))))) ))]
+
+-- printPi: (List Ctrl, List Val, SortedMap Id Bindable , SortedMap Loc Val, List Loc) -> String
+-- printPi (listCrtl, listaVal, env, sto, listLoc) = "Pilha de Controle: " ++ show listCrtl ++ "\n" ++ "Pilha de Valores: " ++ show listaVal ++ "\n" ++ "Enviroment: " ++ show (toList env) ++ "\n" ++ "Stored" ++ show (toList sto) ++ "\n" ++ "Lista de Locations: " ++ show listLoc ++ "\n"
+
+-- process([CtExp (AExpR (Sum (N 2) (N 3)))], [], empty, empty, []) []
