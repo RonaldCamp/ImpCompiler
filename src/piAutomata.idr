@@ -84,6 +84,10 @@ getExpsFromListVal: List Val -> Nat -> List Val -> List Val
 getExpsFromListVal list Z l = reverse l
 getExpsFromListVal (x::xs) (S tam) l = getExpsFromListVal xs (tam) (x::l)
 
+removeActuals: Nat -> List Val -> List Val
+removeActuals Z list = list
+removeActuals (S tam) (x::xs) = removeActuals tam xs
+
 getLocFromValLoc: Val -> Loc
 getLocFromValLoc (ValLoc l) = l
 
@@ -186,4 +190,7 @@ process ( CtAbs (Abstr f c) :: xs , listVal, env, stored, listLoc) (list) = proc
 process ( CtCmd (Call id (Act listExp)) :: xs , listVal, env, stored, listLoc) (list) = process ((pushExpsInCtrl (Act listExp) ((CtCmdOp (CtrlCall id (Prelude.List.length listExp)))::xs)), listVal, env, stored, listLoc) (( CtCmd (Call id (Act listExp)) :: xs , listVal, env, stored, listLoc)::list)
 
 
--- process ( CtCmdOp (CtrlCall id tam)::xs , listVal, env, stored, listLoc) (list) = process ((getCmdFromClosure id env)::((CtCmdOp CtrlBlkCmd)::xs), ValEnv env :: listVal, addIntersectionNewEnv (match (getFormalsFromClosure id env) (getExpsFromListVal (listVal) (tam) ([]) ) ) (addIntersectionNewEnv ((getEnvFromClosure id env)) (env) ) , stored, listLoc) (( CtCmdOp (CtrlCall id tam)::xs , listVal, env, stored, listLoc)::list)
+process ( CtCmdOp (CtrlCall id tam)::xs , listVal, env, stored, listLoc) (list) = process ((getCmdFromClosure id env)::((CtCmdOp CtrlBlkCmd)::xs), ValEnv env :: (ValListLoc listLoc:: (removeActuals tam listVal) ), addIntersectionNewEnv ( Data.SortedMap.toList (match (getFormalsFromClosure id env) (getExpsFromListVal (listVal) (tam) ([]) ) empty) ) ( Data.SortedMap.toList (addIntersectionNewEnv (Data.SortedMap.toList (getEnvFromClosure id env)) (Data.SortedMap.toList env)) ) , stored, []) (( CtCmdOp (CtrlCall id tam)::xs , listVal, env, stored, listLoc)::list)
+
+
+-- CtCmd (Blk (Bind (ValID "z") (Ref (AExpR (N 1)))) (Blk (BindF (ValID "f") (Abstr (Form [ValID "x"]) (Blk (Bind (ValID "y") (Ref (BExpR (IdB (ValID "x"))))) (Loop (Not (Equal (IdA (ValID "y")) (N 0))) (CSeq (Assign (ValID "z") (AExpR (Mul (IdA (ValID "z")) (IdA (ValID "y"))))) (Assign (ValID "y") (AExpR (Sub (IdA (ValID "y")) (N 1))))))))) (Call (ValID "f") (Act [AExpR (N 10)]))))

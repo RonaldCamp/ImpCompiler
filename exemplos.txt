@@ -44,3 +44,12 @@
 -- printPi (listCrtl, listaVal, env, sto, listLoc) = "Pilha de Controle: " ++ show listCrtl ++ "\n" ++ "Pilha de Valores: " ++ show listaVal ++ "\n" ++ "Enviroment: " ++ show (toList env) ++ "\n" ++ "Stored" ++ show (toList sto) ++ "\n" ++ "Lista de Locations: " ++ show listLoc ++ "\n"
 
 -- process([CtExp (AExpR (Sum (N 2) (N 3)))], [], empty, empty, []) []
+
+
+Enter a program: let fn f(x) = let var y := 0 in y:=x+x in f(10)
+(Just CtCmd (Blk (BindF (ValID "f") (Abstr (Form [ValID "x"]) (Blk (Bind (ValID "y") (Ref (AExpR (N 0)))) (Assign (ValID "y") (AExpR (Sum (IdA (ValID "x")) (IdA (ValID "x")))))))) (Call (ValID "f") (Act [AExpR (N 10)]))), [])
+
+
+Enter a program: let var y := 0 in let fn f(x) =  y:=x+x in f(10)
+
+Enter a program: let var z := 1 in let fn f(x) = let var y := x in while not (y==0) do z := z * y, y := y-1 in f(10)
