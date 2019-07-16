@@ -26,6 +26,6 @@ main = repl "Enter a program: " read_input
     read_input : String -> String
     read_input x = let (e, l) = (ctrlParser (read_token (unpack x) "" [])) in case e of
       Nothing  => "Parser Error! \n" ++ show l ++ "\n"
-      Just k => if (verificaList l) then let (resp, (x::xs)) = process ([k], [], empty, empty, []) []
-         in unwords(map printPi (x::xs)) else "Parser Error! \n" ++ show l ++ "\n"
+      Just k => if (verificaList l) then let (resp, (x1::x2::xs)) = process ([k], [], empty, empty, []) []
+         in unwords(map printPi (x1::[x2])) else "Parser Error! \n" ++ show l ++ "\n"
     -- read_input x = show (ctrlParser (read_token (unpack x) "" [])) ++ "\n"

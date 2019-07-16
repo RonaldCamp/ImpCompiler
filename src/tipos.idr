@@ -33,11 +33,13 @@ mutual
 
   data Loc = L Int
 
-  data Bindable = BindLoc Loc | BindInt Int | BindClos Closure
+  data Bindable = BindLoc Loc | BindInt Int | BindClos Closure | BindRec Reclose
 
   data Val = ValInt Int | ValBool Bool | ValId String | ValCmd Cmd | ValLoc Loc | ValListLoc (List Loc) | ValEnv (SortedMap Id Bindable) | ValBindable Bindable | ValClos Closure | ValNop
 
   data Closure = Clos (Formals, Cmd, (SortedMap Id Bindable))
+
+  data Reclose = Rec (Formals, Cmd, (SortedMap Id Bindable), (SortedMap Id Bindable))
 
   implementation Eq Loc where
     (L a) == (L b) = a == b
