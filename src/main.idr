@@ -32,14 +32,13 @@ read_input x "--a" = let (e, l) = (ctrlParser (read_token (unpack x) "" [])) in 
  Just k => if (verificaList l) then let (resp, (x1::x2::xs)) = process ([k], [], empty, empty, []) []
     in "\n" ++ show e ++ "\n" ++ unwords(map printPi (x1::[x2])) else "Parser Error! \n" ++ show l ++ "\n"
 
-main : IO ()
-main = repl "Enter a program: " leParametro where
-  leParametro : String -> String
-  leParametro str = let palavras = words str in case palavras of
-    [] => ""
-    (x::xs) => let p = (last (x::xs)) in case p of
-      "--all" => read_input (removeParam str "--all") "--all"
-      "--a" => read_input (removeParam str "--a") "--a"
-      x => read_input str ""
+leParametro : String -> String
+leParametro str = let palavras = words str in case palavras of
+  [] => ""
+  (x::xs) => let p = (last (x::xs)) in case p of
+    "--all" => read_input (removeParam str "--all") "--all"
+    "--a" => read_input (removeParam str "--a") "--a"
+    x => read_input str ""
 
-    -- read_input x = show (ctrlParser (read_token (unpack x) "" [])) ++ "\n"
+main : IO ()
+main = repl "Enter a program: " leParametro

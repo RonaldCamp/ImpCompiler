@@ -2,8 +2,6 @@ module piAutomata
 
 import tipos
 import Data.SortedMap
-import Control.Monad.Identity
-import Control.Monad.Writer
 
 %access public export
 
@@ -115,7 +113,6 @@ getEnv2FromRec : Id -> (SortedMap Id Bindable) -> (SortedMap Id Bindable)
 getEnv2FromRec id env = let (bindRec) = lookup id env in case bindRec of
   Just (BindRec (Rec (f, b, e, e'))) => e'
 
---Falta fazer o reclose de 2 env, fazer a uniao de reclose(env1) e reclose(env2)
 reclose : SortedMap Id Bindable -> SortedMap Id Bindable
 reclose env = let list = toList env in recloseAux list where
   recloseAux : List (Id, Bindable) -> SortedMap Id Bindable

@@ -309,16 +309,6 @@ mutual
       Nothing => (Nothing, r2)
       Just k => (Just (Call i k), r2)
 
-
-  -- parenExp : List Token -> (Maybe AExp, List Token)
-  -- parenExp ((TokenLParen)::xs) = let (e,r) = arithExp xs in parenExpAux e r where
-  --   parenExpAux : Maybe AExp -> List Token -> (Maybe AExp, List Token)
-  --   parenExpAux Nothing r = (Nothing, (TokenLParen::r))
-  --   parenExpAux (Just e) (TokenRParen::xs) = ((Just e),xs)
-  --   parenExpAux (Just e) l = (Nothing,(TokenLParen::xs))
-  -- parenExp l = (Nothing, l)
-
-
 -- funçao para tentar parser de AExp e BExp
 -- tenta aplicar o parser1 a lista
   orParser : (List Token -> (Maybe a, List Token)) -> (List Token -> (Maybe a, List Token)) -> (List Token -> (Maybe a, List Token))
