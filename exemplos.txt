@@ -53,3 +53,10 @@ Enter a program: let fn f(x) = let var y := 0 in y:=x+x in f(10)
 Enter a program: let var y := 0 in let fn f(x) =  y:=x+x in f(10)
 
 Enter a program: let var z := 1 in let fn f(x) = let var y := x in while not (y==0) do z := z * y, y := y-1 in f(10)
+
+Enter a program: let var z:=1 in let rec fn f(x) = let var y:=x in if y>=1 then z:=z*y, f(y-1) in f(2)
+(Just CtCmd (Blk (Bind (ValID "z") (Ref (AExpR (N 1)))) (Blk (Rbnd (ValID "f") (Abstr (Form [ValID "x"]) (Blk (Bind (ValID "y") (Ref (BExpR (IdB (ValID "x"))))) (Cond (GE (IdA (ValID "y")) (N 1)) (CSeq (Assign (ValID "z") (AExpR (Mul (IdA (ValID "z")) (IdA (ValID "y"))))) (Call (ValID "f") (Act [AExpR (Sub (IdA (ValID "y")) (N 1))]))) (NOP))))) (Call (ValID "f") (Act [AExpR (N 2)])))), [])
+
+CtCmd (Blk (Bind (ValID "z") (Ref (AExpR (N 1)))) (Blk (Rbnd (ValID "f") (Abstr (Form [ValID "x"]) (Blk (Bind (ValID "y") (Ref (BExpR (IdB (ValID "x"))))) (Cond (GE (IdA (ValID "y")) (N 1)) (CSeq (Assign (ValID "z") (AExpR (Mul (IdA (ValID "z")) (IdA (ValID "y"))))) (Call (ValID "f") (Act [AExpR (Sub (IdA (ValID "y")) (N 1))]))) (NOP))))) (Call (ValID "f") (Act [AExpR (N 2)]))))
+
+process ([CtCmd (Blk (Bind (ValID "z") (Ref (AExpR (N 1)))) (Blk (Rbnd (ValID "f") (Abstr (Form [ValID "x"]) (Blk (Bind (ValID "y") (Ref (BExpR (IdB (ValID "x"))))) (Cond (GE (IdA (ValID "y")) (N 1)) (CSeq (Assign (ValID "z") (AExpR (Mul (IdA (ValID "z")) (IdA (ValID "y"))))) (Call (ValID "f") (Act [AExpR (Sub (IdA (ValID "y")) (N 1))]))) (NOP))))) (Call (ValID "f") (Act [AExpR (N 2)]))))], [], empty, empty, []) []

@@ -107,9 +107,21 @@ inserir : Maybe Bindable -> Val -> SortedMap Loc Val -> SortedMap Loc Val
 inserir (Just (BindLoc loc)) v stored = insert loc v stored
 inserir Nothing v stored = stored
 
-recoverEnv : List (Id, Bindable) -> SortedMap Id Bindable -> SortedMap Id Bindable
-recoverEnv [] env = env
-recoverEnv ((id, b)::xs) env = let env' = insert id b env in recoverEnv xs env'
+getCmdFromRec : Id -> (SortedMap Id Bindable) ->  Ctrl
+getCmdFromRec id env = let (bindRec) = lookup id env in case bindRec of
+  Just (BindRec (Rec (f, b, e, e'))) => CtCmd b
+
+getFormalsFromRec : Id -> (SortedMap Id Bindable) -> Formals
+getFormalsFromRec id env = let (bindRec) = lookup id env in case bindRec of
+  Just (BindRec (Rec (f, b, e, e'))) => f
+
+getEnv1FromRec : Id -> (SortedMap Id Bindable) -> (SortedMap Id Bindable)
+getEnv1FromRec id env = let (bindRec) = lookup id env in case bindRec of
+  Just (BindRec (Rec (f, b, e, e'))) => e
+
+getEnv2FromRec : Id -> (SortedMap Id Bindable) -> (SortedMap Id Bindable)
+getEnv2FromRec id env = let (bindRec) = lookup id env in case bindRec of
+  Just (BindRec (Rec (f, b, e, e'))) => e'
 
 --Falta fazer o reclose de 2 env, fazer a uniao de reclose(env1) e reclose(env2)
 reclose : SortedMap Id Bindable -> SortedMap Id Bindable
@@ -177,6 +189,7 @@ process ( (CtExp (BExpR (IdB (ValID c1)) )) ::xs , listVal, env, stored, listLoc
 process ( (CtCmd (Loop b c)) ::xs , listVal, env, stored, listLoc) (list) = process (CtExp (BExpR b) ::(CtCmdOp CtrlLoop::xs), ValCmd (Loop b c)::listVal, env, stored, listLoc) (( (CtCmd (Loop b c)) ::xs , listVal, env, stored, listLoc)::list)
 process ( (CtCmd (Cond b c1 c2)) ::xs , listVal, env, stored, listLoc) (list) = process (CtExp (BExpR b) ::(CtCmdOp CtrlCond::xs), ValCmd (Cond b c1 c2)::listVal, env, stored, listLoc) (( (CtCmd (Cond b c1 c2)) ::xs , listVal, env, stored, listLoc)::list)
 process ( (CtCmd (CSeq c1 c2)) ::xs , listVal, env, stored, listLoc) (list) = process (CtCmd c1::(CtCmd c2::xs), listVal, env, stored, listLoc) (( (CtCmd (CSeq c1 c2)) ::xs , listVal, env, stored, listLoc)::list)
+process ( (CtCmd NOP) ::xs, listVal, env, stored, listLoc) (list) = process ( xs, listVal, env, stored, listLoc) (list)
 
 process ( (CtCmdOp CtrlAssign :: xs ,  v1 :: (ValId v2 ::listVal), env, stored, listLoc)) (list) = process (xs, listVal, env, (inserir (lookup (ValID v2) env) (v1) stored), listLoc) (( (CtCmdOp CtrlAssign :: xs ,  v1 :: (ValId v2 ::listVal), env, stored, listLoc))::list)
 process ( (CtCmdOp CtrlLoop :: xs , ValBool True :: (ValCmd (Loop b2 c) :: listVal), env, stored, listLoc)) (list) = process (CtCmd c ::(CtCmd (Loop b2 c)::xs), listVal, env, stored, listLoc) (( (CtCmdOp CtrlLoop :: xs , ValBool True :: (ValCmd (Loop b2 c) :: listVal), env, stored, listLoc))::list)
@@ -208,8 +221,9 @@ process ( CtAbs (Abstr f c) :: xs , listVal, env, stored, listLoc) (list) = proc
 process ( CtCmd (Call id (Act listExp)) :: xs , listVal, env, stored, listLoc) (list) = process ((pushExpsInCtrl (Act listExp) ((CtCmdOp (CtrlCall id (Prelude.List.length listExp)))::xs)), listVal, env, stored, listLoc) (( CtCmd (Call id (Act listExp)) :: xs , listVal, env, stored, listLoc)::list)
 
 -- Separar esse CtrlCall em Case of de env qdo for I->Clos fazer esse aqui msm (funçao simples) qdo for I->Rec fazer CtrCall da funçao recursiva
-process ( CtCmdOp (CtrlCall id tam)::xs , listVal, env, stored, listLoc) (list) =
-  process ((getCmdFromClosure id env)::((CtCmdOp CtrlBlkCmd)::xs), ValEnv env :: (ValListLoc listLoc:: (removeActuals tam listVal) ), addIntersectionNewEnv ( Data.SortedMap.toList (match (getFormalsFromClosure id env) (getExpsFromListVal (listVal) (tam) ([]) ) empty) ) ( Data.SortedMap.toList (addIntersectionNewEnv (Data.SortedMap.toList (getEnvFromClosure id env)) (Data.SortedMap.toList env)) ) , stored, []) (( CtCmdOp (CtrlCall id tam)::xs , listVal, env, stored, listLoc)::list)
+process ( CtCmdOp (CtrlCall id tam)::xs , listVal, env, stored, listLoc) (list) = let e = toList env in case e of
+  (((ValID w), (BindClos (Clos (f, b, e))))::l) => process ((getCmdFromClosure id env)::((CtCmdOp CtrlBlkCmd)::xs), ValEnv env :: (ValListLoc listLoc:: (removeActuals tam listVal) ), addIntersectionNewEnv ( Data.SortedMap.toList (match (getFormalsFromClosure id env) (getExpsFromListVal (listVal) (tam) ([]) ) empty) ) ( Data.SortedMap.toList (addIntersectionNewEnv (Data.SortedMap.toList (getEnvFromClosure id env)) (Data.SortedMap.toList env)) ) , stored, []) (( CtCmdOp (CtrlCall id tam)::xs , listVal, env, stored, listLoc)::list)
+  (((ValID w), (BindRec (Rec (f,b,e', e''))))::l) => process ((getCmdFromRec id env)::((CtCmdOp CtrlBlkCmd)::xs), ValEnv env :: (ValListLoc listLoc:: (removeActuals tam listVal) ), addIntersectionNewEnv ( Data.SortedMap.toList (match (getFormalsFromRec id env) (getExpsFromListVal (listVal) (tam) ([]) ) empty) ) (Data.SortedMap.toList (addIntersectionNewEnv (Data.SortedMap.toList (unfold (getEnv2FromRec id env))) ( Data.SortedMap.toList (addIntersectionNewEnv (Data.SortedMap.toList (getEnv1FromRec id env)) (Data.SortedMap.toList env)) ))) , stored, []) (( CtCmdOp (CtrlCall id tam)::xs , listVal, env, stored, listLoc)::list)
 
 
 -- process ( CtDec (Rbnd (ValID x) abs) :: xs , listVal, env, stored, listLoc) (list) = process ( CtAbs abs :: (CtDecOp CtrlRbnd::xs), ValId x ::listVal, env, stored, listLoc) (( CtDec (Rbnd (ValID x) abs) :: xs , listVal, env, stored, listLoc)::list)
