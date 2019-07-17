@@ -7,10 +7,6 @@ import Control.Monad.Writer
 
 %access public export
 
-
-diga : a -> Writer (List a) ()
-diga a = tell [a]
-
 calcAExp : AExp -> Int
 calcAExp (Sum (N n1) (N n2)) = n1 + n2
 calcAExp (Sub (N n1) (N n2)) = n1 - n2
@@ -30,7 +26,6 @@ calcBExp (OR (Boo b1) (Boo b2)) = (||) b1 b2
 transforma:Maybe a -> a
 transforma (Just v) = v
 
-
 -- retorna o maior Loc da lista de Locs
 maxList: List Loc -> Int
 maxList [] = 0
@@ -42,7 +37,6 @@ maxList (x :: xs) = auxiliar x xs where
 -- retorna o maior Loc do mapa + 1
 getLocPlus1FromMap: SortedMap Loc Val -> Loc
 getLocPlus1FromMap map = L ((maxList (keys map)) + 1)
-
 
 -- Retorna um stored com a adição de uma nova location como chave e um valor v
 extendStored: SortedMap Loc Val -> Val -> SortedMap Loc Val
@@ -57,12 +51,10 @@ addIntersectionNewEnv: List (Id,Bindable)-> List (Id,Bindable) -> SortedMap Id B
 addIntersectionNewEnv [] env = fromList env
 addIntersectionNewEnv ( (key,value) :: e) env = addIntersectionNewEnv e (toList (insert key value (fromList env)))
 
-
 -- deleta todos as chave-valor da memoria dada uma lista de chaves (Loc)
 deleteLocsStore: List Loc -> SortedMap Loc Val -> SortedMap Loc Val
 deleteLocsStore [] store = store
 deleteLocsStore (x :: xs) store = deleteLocsStore xs (delete x store)
-
 
 pushExpsInCtrl : Actuals -> List Ctrl -> List Ctrl
 pushExpsInCtrl (Act []) list = list
@@ -133,7 +125,6 @@ reclose env = let list = toList env in recloseAux list where
     ((ValID w), (BindRec (Rec (f,b,e', e'')))) => let env' = insert (ValID w) (BindRec (Rec (f,b,e', e''))) empty in insert (ValID w) (BindRec (Rec (f,b,e', env'))) empty
     (id, b) => insert id b empty
   recloseAux (x::xs) = Data.SortedMap.fromList ((Data.SortedMap.toList (reclose (Data.SortedMap.fromList [x]))) ++ (Data.SortedMap.toList (reclose (Data.SortedMap.fromList xs))))
-  -- recloseAux (x::xs) = fromList ((Data.SortedMap.toList (recloseAux [x])) ++ (Data.SortedMap.toList (recloseAux xs)))
 
 unfold : SortedMap Id Bindable -> SortedMap Id Bindable
 unfold e = reclose(e)
@@ -220,15 +211,8 @@ process ( CtDecOp CtrlBindF :: xs , ValClos cls :: (ValId w :: listVal), env, st
 process ( CtAbs (Abstr f c) :: xs , listVal, env, stored, listLoc) (list) = process (xs, ValClos (Clos (f,c, env))::listVal, env, stored, listLoc) (( CtAbs (Abstr f c) :: xs , listVal, env, stored, listLoc)::list)
 process ( CtCmd (Call id (Act listExp)) :: xs , listVal, env, stored, listLoc) (list) = process ((pushExpsInCtrl (Act listExp) ((CtCmdOp (CtrlCall id (Prelude.List.length listExp)))::xs)), listVal, env, stored, listLoc) (( CtCmd (Call id (Act listExp)) :: xs , listVal, env, stored, listLoc)::list)
 
--- Separar esse CtrlCall em Case of de env qdo for I->Clos fazer esse aqui msm (funçao simples) qdo for I->Rec fazer CtrCall da funçao recursiva
 process ( CtCmdOp (CtrlCall id tam)::xs , listVal, env, stored, listLoc) (list) = let e = toList env in case e of
   (((ValID w), (BindClos (Clos (f, b, e))))::l) => process ((getCmdFromClosure id env)::((CtCmdOp CtrlBlkCmd)::xs), ValEnv env :: (ValListLoc listLoc:: (removeActuals tam listVal) ), addIntersectionNewEnv ( Data.SortedMap.toList (match (getFormalsFromClosure id env) (getExpsFromListVal (listVal) (tam) ([]) ) empty) ) ( Data.SortedMap.toList (addIntersectionNewEnv (Data.SortedMap.toList (getEnvFromClosure id env)) (Data.SortedMap.toList env)) ) , stored, []) (( CtCmdOp (CtrlCall id tam)::xs , listVal, env, stored, listLoc)::list)
   (((ValID w), (BindRec (Rec (f,b,e', e''))))::l) => process ((getCmdFromRec id env)::((CtCmdOp CtrlBlkCmd)::xs), ValEnv env :: (ValListLoc listLoc:: (removeActuals tam listVal) ), addIntersectionNewEnv ( Data.SortedMap.toList (match (getFormalsFromRec id env) (getExpsFromListVal (listVal) (tam) ([]) ) empty) ) (Data.SortedMap.toList (addIntersectionNewEnv (Data.SortedMap.toList (unfold (getEnv2FromRec id env))) ( Data.SortedMap.toList (addIntersectionNewEnv (Data.SortedMap.toList (getEnv1FromRec id env)) (Data.SortedMap.toList env)) ))) , stored, []) (( CtCmdOp (CtrlCall id tam)::xs , listVal, env, stored, listLoc)::list)
 
-
--- process ( CtDec (Rbnd (ValID x) abs) :: xs , listVal, env, stored, listLoc) (list) = process ( CtAbs abs :: (CtDecOp CtrlRbnd::xs), ValId x ::listVal, env, stored, listLoc) (( CtDec (Rbnd (ValID x) abs) :: xs , listVal, env, stored, listLoc)::list)
--- process ( CtDecOp CtrlRbnd :: xs , ValClos cls :: (ValId w :: listVal), env, stored, listLoc) (list) = process (xs, ValEnv (insert (ValID w) (BindClos cls) (empty)) ::listVal, env, stored, listLoc) (( CtDecOp CtrlRbnd :: xs , ValClos cls :: (ValId w :: listVal), env, stored, listLoc)::list)
-
 process ( CtDec (Rbnd (ValID x) (Abstr f c)) :: xs , listVal, env, stored, listLoc) (list) = process ( xs, ValEnv (unfold (insert (ValID x) (BindClos (Clos (f, c, env))) empty)) ::listVal, env, stored, listLoc) (( CtDec (Rbnd (ValID x) (Abstr f c)) :: xs , listVal, env, stored, listLoc)::list)
-
--- insert (ValID "w") (BindClos (Clos (Form ([ValID "x"]), (Blk (Bind (ValID "y")  (Ref (AExpR (N 0)))) (Assign (ValID "y") (AExpR (Sum (N 1) (IdA (ValID "x")))))), empty))) (empty)

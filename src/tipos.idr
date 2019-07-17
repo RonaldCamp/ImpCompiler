@@ -27,7 +27,7 @@ mutual
 
   data ExpOp = CtrlSum | CtrlSub | CtrlDiv | CtrlMul | CtrlNot | CtrlLT | CtrlGT | CtrlLE | CtrlGE | CtrlAnd | CtrlOR | CtrlEq | CtrlRef | CtrlCns
 
-  data DecOp = CtrlBind | CtrlDSeq | CtrlBindF | CtrlRbnd
+  data DecOp = CtrlBind | CtrlDSeq | CtrlBindF
 
   data Ctrl = CtExp Exp | CtExpOp ExpOp | CtCmd Cmd | CtDec Dec | CtCmdOp CmdOp | CtDecOp DecOp | CtAbs Abst
 
@@ -113,6 +113,9 @@ mutual
   implementation Show Closure where
     show (Clos (f, c, e)) = "Clos (" ++ show f ++ ", " ++ show c ++ ", " ++ show (toList e) ++ ")"
 
+  implementation Show Reclose where
+    show (Rec (f, c, e, e')) = "Clos (" ++ show f ++ ", " ++ show c ++ ", " ++ show (toList e) ++ show (toList e') ++ ")"
+
   implementation Show CmdOp where
     show CtrlAssign = "CtrlAssign"
     show CtrlLoop = "CtrlLoop"
@@ -142,7 +145,6 @@ mutual
     show CtrlBind = "CtrlBind"
     show CtrlDSeq = "CtrlDSeq"
     show CtrlBindF = "CtrlBindF"
-    show CtrlRbnd = "CtrlRbnd"
 
   implementation Show Ctrl where
     show (CtExp a) = "CtExp (" ++ show a ++ ")"
@@ -160,6 +162,7 @@ mutual
     show (BindLoc x) = "BindLoc (" ++ show x ++ ")"
     show (BindInt x) = "BindInt (" ++ show x ++ ")"
     show (BindClos x) = "BindClos (" ++ show x ++ ")"
+    show (BindRec x) = "BindRec (" ++ show x ++ ")"
 
   implementation Show Val where
     show (ValInt a) = "ValInt (" ++ show a ++ ")"
